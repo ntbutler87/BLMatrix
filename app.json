@@ -1,4 +1,7 @@
 {
   "name": "BLMatrix",
-  "displayName": "BLMatrix"
+  "displayName": "BLMatrix",
+  "ios": {
+    "supportsTablet": true
+  }
 }

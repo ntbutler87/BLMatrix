@@ -5,113 +5,137 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
+  useWindowDimensions,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
   useColorScheme,
-  View,
+  Button
 } from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import matrixSDK, { MatrixStatus, statusSchema } from './config/MatrixSDK';
+import InputRoutingScreen from './layouts/InputRoutingScreen';
+import SettingsScreen from './layouts/SettingsScreen';
+import appSettings, { AppConfig, blankConfig } from './config/AppSettings';
+import { RootStackParamList } from './layouts/types';
 
 function App(): React.JSX.Element {
+  const { height, width } = useWindowDimensions();
+  const [matrixStatus, setMatrixStatus] = useState<MatrixStatus>(statusSchema);
+  const [appConfig, setAppConfig] = useState<AppConfig>(blankConfig);
   const isDarkMode = useColorScheme() === 'dark';
+  const Stack = createNativeStackNavigator<RootStackParamList>();
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  useEffect(() => {
+    Promise.resolve(matrixSDK.init(updateStatusState)).catch((e) => { console.log(e) });
+    console.log("MatrixIP Currently: " + matrixStatus?.ip);
+    return (() => { Promise.resolve(matrixSDK.stopConnection()); })
+  }, []);
+
+  const updateConfig = (config: AppConfig) => {
+    console.log("New config:");
+    console.log(JSON.stringify(config));
+    setAppConfig({...config});
+  }
+
+  useEffect( () => {
+    Promise.resolve(appSettings.init(updateConfig))
+      .then( () => {
+        console.log("Got app config");
+      } )
+      .catch((e) => { console.log(e) });
+  }, [] );
+
+
+  const updateStatusState = (state: MatrixStatus) => {
+    console.log("Updating local matrixState - should re-render...");
+    setMatrixStatus({ ...state });
+  }
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+    <SafeAreaView style={styles.mainContainer}>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <NavigationContainer>
+        <Stack.Navigator>
+
+          <Stack.Screen name="Input Routing" options={({ navigation, route }) => ({
+            headerStyle: {
+              backgroundColor: '#006DB2',
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold'
+            },
+            headerRight: () => (
+              <Button
+                onPress={() => {
+                  navigation.navigate('Settings')
+                }}
+                title="Settings"
+                color="#fff"
+              />
+            ),
+          })}>
+            {(props) => <InputRoutingScreen 
+                matrixStatus={matrixStatus}
+                appConfig={appConfig}
+              />}
+          </Stack.Screen>
+
+          <Stack.Screen name="Settings" options={{
+            headerStyle: {
+              backgroundColor: '#006DB2',
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold'
+            },
           }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+            {(props) => <SettingsScreen 
+                matrixStatus={matrixStatus}
+                appConfig={appConfig}
+              />}
+          </Stack.Screen>
+
+
+        </Stack.Navigator>
+      </NavigationContainer>
+      
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#006DB2',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  outputMapper: {
+    position: 'absolute',
+    zIndex: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    opacity: 0.4,
+    backgroundColor: 'rgba(50,50,50,0.5)',
+    borderRadius: 10,
+    shadowRadius: 15,
+    shadowColor: 'rgb(20,20,20)',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.7,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  outputMapperInner: {
+    flex: 1,
+    alignContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 150,
+    backgroundColor: 'rgb(250,250,250)',
+    borderRadius: 10,
   },
 });
 
