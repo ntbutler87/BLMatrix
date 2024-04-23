@@ -1,15 +1,14 @@
 import { TouchableOpacity, StyleSheet, Text, Image, View, GestureResponderEvent } from "react-native";
-import { MatrixInput, MatrixOutput } from "../config/MatrixSDK";
-import { MatrixPort, getImage } from "../config/AppSettings";
+import { MatrixInput, MatrixOutput, MatrixScene } from "../config/MatrixSDK";
+import { MatrixPort, MatrixPreset, getImage } from "../config/AppSettings";
 
 import inputImage from '../resources/input.png';
 
 interface PortStatus {
-    port: MatrixOutput;
-    input: MatrixInput | undefined;
-    disabled?: boolean;
+    port: MatrixScene;
     onPressF: Function;
-    appPortConfig: MatrixPort;
+    appPortConfig: MatrixPreset;
+    disabled?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -18,7 +17,6 @@ const styles = StyleSheet.create({
       paddingVertical: 10,
       paddingHorizontal: 20,
       borderRadius: 10,
-    //   backgroundColor: '#FFFD5A',
       backgroundColor: '#FFF',
       shadowRadius: 5,
       shadowColor: 'rgb(20,20,20)',
@@ -57,39 +55,31 @@ const styles = StyleSheet.create({
     },
     outputText: {
         flex:3,
-        // alignSelf: 'flex-start',
-        // flexDirection: 'row',
-        // alignContent: 'center',
         color: '#303030', 
         fontSize: 13,
         fontWeight: '400',
-        // backgroundColor: 'rgb(250,250,250)',
-        // borderRadius: 4,
-        // padding: 5,
     },
     portImage: {
         flex: 1,
         width: 15,
         height: 15,
         alignSelf: 'center',
-        // marginRight: 20,
     },
     portDisconnected: {
         color: '#E31010',
-        // opacity: 0.6,
     },
     inputIconContainer: {
-        width: 50,
-        height: 50,
+        width: 100,
+        height: 100,
         padding: 10,
         margin: 15,
-        borderRadius: 50,
+        borderRadius: 100,
         backgroundColor: '#E8F6FF',
         alignSelf: 'center',
     },
     inputIcon: {
-        width: 30,
-        height: 30,
+        width: 80,
+        height: 80,
         alignSelf: 'center',
     },
     outputList: {
@@ -110,7 +100,7 @@ const styles = StyleSheet.create({
     },
   });
 
-export default function OutputTile({ disabled, port, input, onPressF, appPortConfig }: PortStatus) {
+export default function SceneTile({ port, onPressF, appPortConfig, disabled }: PortStatus) {
     return (
         <TouchableOpacity style={[styles.btn, (disabled) ? styles.isDisabled : null]} onPress={ (disabled) ? () => {} : () => {onPressF(port)}}>
             <View style={{flex:1}}>
@@ -118,10 +108,6 @@ export default function OutputTile({ disabled, port, input, onPressF, appPortCon
                     <Image style={[styles.inputIcon, (disabled) ? styles.isDisabled : null]} source={getImage(port, appPortConfig)} />
                 </View>
                 <Text style={[styles.headerText]}>{ (appPortConfig?.overrideName) ? appPortConfig.name : port.name}</Text>
-                <Text style={[styles.inputText]}><Text style={[styles.connectedText, (port.sig == 0 ? styles.portDisconnected : null)]}>{port.sig == 0 ? "Disconnected" : "Connected" }</Text></Text>
-            </View>
-            <View style={styles.outputList}>
-                {(input) ? <View key={input.port} style={styles.outputListItem} ><Image source={inputImage} style={styles.portImage} resizeMethod='resize' resizeMode='contain' /><Text style={styles.outputText}>{input.port}: {input.name}</Text></View> : null}
             </View>
         </TouchableOpacity>
     );

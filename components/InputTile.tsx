@@ -1,13 +1,6 @@
 import { TouchableOpacity, StyleSheet, Text, Image, View, GestureResponderEvent } from "react-native";
 import { MatrixInput, MatrixOutput } from "../config/MatrixSDK";
-import { MatrixPort } from "../config/AppSettings";
-
-import hdmiImage from '../resources/hdmi.png';
-import screenImage from '../resources/monitor.png';
-import stopImage from '../resources/no-parking.png';
-import projectorImage from '../resources/projector.png';
-import tvImage from '../resources/television.png';
-import streamImage from '../resources/video-player.png';
+import { MatrixPort, getImage } from "../config/AppSettings";
 
 import inputImage from '../resources/input.png';
 
@@ -16,26 +9,7 @@ interface PortStatus {
     outputs: MatrixOutput[];
     disabled?: boolean;
     onPressF: Function;
-    appPortConfig?: MatrixPort;
-}
-
-const getImage = (name: string) => {
-    if (name.toUpperCase().includes('PC') || name.toUpperCase().includes('COMPUTER')){
-        return screenImage;
-    }
-    if (name.toUpperCase().includes("PROJ")){
-        return projectorImage;
-    }
-    if (name.toUpperCase().includes('TV') || name.toUpperCase().includes('TELEVISION')){
-        return tvImage;
-    }
-    if (name.toUpperCase().includes("STREAM")){
-        return streamImage;
-    }
-    if (name.toUpperCase().includes('UNUSED' || name.toUpperCase().includes('NONE') || name.toUpperCase().includes('DISCONNECTED'))) {
-        return stopImage;
-    }
-    return hdmiImage;
+    appPortConfig: MatrixPort;
 }
 
 const styles = StyleSheet.create({
@@ -140,7 +114,9 @@ export default function InputTile({ disabled, port, outputs,onPressF,appPortConf
     return (
         <TouchableOpacity style={[styles.btn, (disabled) ? styles.isDisabled : null]} onPress={ (disabled) ? () => {} : () => {onPressF(port)}}>
             <View style={{flex:1}}>
-                <View style={styles.inputIconContainer}><Image style={styles.inputIcon} source={getImage(port.name)} /></View>
+                <View style={[styles.inputIconContainer, (disabled) ? styles.isDisabled : null]}>
+                    <Image style={[styles.inputIcon, (disabled) ? styles.isDisabled : null]} source={getImage(port, appPortConfig)} />
+                </View>
                 <Text style={[styles.headerText]}>{ (appPortConfig?.overrideName) ? appPortConfig.name : port.name}</Text>
                 <Text style={[styles.inputText]}><Text style={[styles.connectedText, (port.sig == 0 ? styles.portDisconnected : null)]}>{port.sig == 0 ? "Disconnected" : "Connected" }</Text></Text>
                 {/* <Text style={[styles.connectedText, (port.sig == 0 ? styles.portDisconnected : null)]}>{port.sig == 0 ? "Not" : null } Connected</Text> */}

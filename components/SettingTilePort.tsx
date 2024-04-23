@@ -1,15 +1,7 @@
 import { useEffect, useState } from "react";
-import { TouchableOpacity, StyleSheet, Text, Image, View, Switch, TextInput } from "react-native";
+import { TouchableOpacity, StyleSheet, Text, Image, View, Switch, TextInput, ImageSourcePropType } from "react-native";
 import { MatrixInput, MatrixOutput, MatrixScene } from "../config/MatrixSDK";
-import appSettings, { MatrixPort, MatrixPreset } from "../config/AppSettings";
-
-import hdmiImage from '../resources/hdmi.png';
-import screenImage from '../resources/monitor.png';
-import stopImage from '../resources/no-parking.png';
-import projectorImage from '../resources/projector.png';
-import tvImage from '../resources/television.png';
-import streamImage from '../resources/video-player.png';
-import settingImage from '../resources/setting.png';
+import appSettings, { MatrixPort, MatrixPreset, getImage, ImagePicker } from "../config/AppSettings";
 
 import inputImage from '../resources/input.png';
 
@@ -18,26 +10,7 @@ interface PortStatus {
     title: string;
     disabled?: boolean;
     onPress?: Function;
-    appPortConfig?: MatrixPort;
-}
-
-const getImage = (name: string) => {
-    if (name.toUpperCase().includes('PC') || name.toUpperCase().includes('COMPUTER')){
-        return screenImage;
-    }
-    if (name.toUpperCase().includes("PROJ")){
-        return projectorImage;
-    }
-    if (name.toUpperCase().includes('TV') || name.toUpperCase().includes('TELEVISION')){
-        return tvImage;
-    }
-    if (name.toUpperCase().includes("STREAM")){
-        return streamImage;
-    }
-    if (name.toUpperCase().includes('UNUSED' || name.toUpperCase().includes('NONE') || name.toUpperCase().includes('DISCONNECTED'))) {
-        return stopImage;
-    }
-    return hdmiImage;
+    appPortConfig: MatrixPort | MatrixPreset;
 }
 
 const styles = StyleSheet.create({
@@ -98,8 +71,8 @@ const styles = StyleSheet.create({
         color: '#E31010',
     },
     inputIconContainer: {
-        width: 50,
-        height: 50,
+        width: 80,
+        height: 80,
         padding: 10,
         margin: 15,
         borderRadius: 50,
@@ -107,8 +80,8 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     inputIcon: {
-        width: 30,
-        height: 30,
+        width: 60,
+        height: 60,
         alignSelf: 'center',
     },
     outputList: {
@@ -193,25 +166,24 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '800',
     },
+    imagePicker: {
+        columnGap:5,
+        borderTopColor: '#006DB2',
+        borderBottomColor: '#006DB2',
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        
+    },
+    manualImage: {
+        backgroundColor:'#faefd4',
+    },
   });
 
 export default function SettingTilePort({ disabled, port, title, onPress, appPortConfig }: PortStatus) {
-    const [debouncedName, setDebouncedName] = useState<string>('');
     const [nameInput, setNameInput] = useState<string>((appPortConfig?.name) ? appPortConfig.name : '');
     const [override, setOverride] = useState<boolean>((appPortConfig?.overrideName) ? appPortConfig.overrideName : false);
+    const [pickImage, setPickImage] = useState<boolean>(false);
     
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-          setDebouncedName(nameInput);
-        }, 1000);
-        return () => clearTimeout(timeoutId);
-    }, [nameInput, 1000]);
-    
-    // useEffect(() => {
-    //     if (debouncedName !== appPortConfig?.name && debouncedName.length >= 2) {
-    //         appSettings.overridePortName(port,debouncedName);
-    //     }
-    // }, [debouncedName]);
 
     const toggleOverrideName = (override: boolean) => {
         if (!override) {
@@ -221,17 +193,33 @@ export default function SettingTilePort({ disabled, port, title, onPress, appPor
     }
 
     const validateNewName = () => {
-        if (nameInput !== appPortConfig?.name && nameInput.length >= 2 && nameInput.length <= 10) {
+        if (nameInput !== appPortConfig?.name) { // && nameInput.length >= 2 && nameInput.length <= 10) {
             appSettings.overridePortName(port,nameInput);
         }
     }
 
     return (
-        <TouchableOpacity style={[styles.btn, (disabled) ? styles.isDisabled : null]} onPress={ (disabled) ? () => {} : () => {if(onPress){onPress(port)}}}>
-            <View style={{flex:1}}>
-                <View style={styles.inputIconContainer}><Image style={styles.inputIcon} source={getImage(port.name)} /></View>
+        <View 
+            // onLayout={(event) => {
+            //     const {x, y, width, height} = event.nativeEvent.layout;
+            // }}
+            style={[styles.btn, (disabled) ? styles.isDisabled : null,{justifyContent:'space-between',rowGap: 10,}]}>
+            <View style={{flex:4}}>
+            {(pickImage) ? <ImagePicker 
+                horizontal={true}
+                style={styles.imagePicker}
+                onSelect={(image: ImageSourcePropType, index: number) => {console.log(index);setPickImage(false); appSettings.setPortImageIndex(appPortConfig, index)}}/> :
+                <TouchableOpacity 
+                    style={[styles.inputIconContainer,(appPortConfig.imageIndex !== 0) ? styles.manualImage : null]}
+                    onPress={() => {setPickImage(true)}}>
+                    <Image style={[styles.inputIcon]} source={getImage(port, appPortConfig)} />
+                </TouchableOpacity>}
+            </View>
+            <View style={{flex:3}}>
                 <Text style={[styles.headerText]}>{title}</Text>
                 <TouchableOpacity style={[styles.detectedName]}><Image style={styles.settingImage} source={inputImage}/><Text style={styles.detectedNameText}>{port.name}</Text></TouchableOpacity>
+            </View>
+            <View style={{flex:4}}>
                 <View style={[styles.overrideContainer]}>
                     <View style={[styles.overrideSwitchRow]}>
                         <Text style={[styles.overrideOptionText]}>Override name</Text>
@@ -251,6 +239,6 @@ export default function SettingTilePort({ disabled, port, title, onPress, appPor
 
                 {/* <Text style={[styles.headerText]}>{ (appPortConfig?.overrideName) ? appPortConfig.name : port.name}</Text> */}
             </View>
-        </TouchableOpacity>
+        </View>
     );
 }

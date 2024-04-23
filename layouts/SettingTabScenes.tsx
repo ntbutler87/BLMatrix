@@ -32,7 +32,7 @@ function SettingsTabScenes({matrixStatus, currentAppSettings}: Props): React.JSX
   return (
     <View style={{flex:1, flexDirection:'column', alignItems:'center'}}>
       <View style={styles.settingTileRow}>
-      {currentAppSettings?.HDMI_OUT.map( (elem) => {
+      {currentAppSettings?.Scene.map( (elem) => {
         return <SettingTilePort 
           key={"Scene" + elem.port}
           title={"Scene #" + elem.port}

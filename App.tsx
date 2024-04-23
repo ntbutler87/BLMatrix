@@ -5,29 +5,48 @@
  * @format
  */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef  } from 'react';
 import {
   useWindowDimensions,
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   useColorScheme,
-  Button
+  Button,
+  View,
+  Image,
+  Text,
+  TouchableOpacity,
+  PanResponder,
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import matrixSDK, { MatrixStatus, statusSchema } from './config/MatrixSDK';
-import InputRoutingScreen from './layouts/InputRoutingScreen';
-import SettingsScreen from './layouts/SettingsScreen';
 import appSettings, { AppConfig, blankConfig } from './config/AppSettings';
+import SettingsScreen from './layouts/SettingsScreen';
 import { RootStackParamList } from './layouts/types';
+import logoImage from './resources/LogoTransparent.png';
+import connectedImage from './resources/linked.png';
+import disconnectedImage from './resources/unlink.png';
+import OperationScreen from './layouts/OperationScreen';
 
 function App(): React.JSX.Element {
   const { height, width } = useWindowDimensions();
   const [matrixStatus, setMatrixStatus] = useState<MatrixStatus>(statusSchema);
   const [appConfig, setAppConfig] = useState<AppConfig>(blankConfig);
+  const [displaySplash, setDisplaySplash] = useState<boolean>(true);
   const isDarkMode = useColorScheme() === 'dark';
   const Stack = createNativeStackNavigator<RootStackParamList>();
+
+  const hideSplash = () => {
+    const timeoutLength = appConfig.splashTimeout * 60000;
+    console.log ("SplashTimeout: " + appConfig.splashTimeout + " - Timeout: " + timeoutLength);
+    console.log (JSON.stringify(appConfig));
+
+    setDisplaySplash(false);
+    const timeoutId = setTimeout(() => {
+      setDisplaySplash(true);
+    }, timeoutLength); // Show the splash screen again after splashTimeout # of minutes
+  }
 
   useEffect(() => {
     Promise.resolve(matrixSDK.init(updateStatusState)).catch((e) => { console.log(e) });
@@ -49,19 +68,45 @@ function App(): React.JSX.Element {
       .catch((e) => { console.log(e) });
   }, [] );
 
-
   const updateStatusState = (state: MatrixStatus) => {
     console.log("Updating local matrixState - should re-render...");
     setMatrixStatus({ ...state });
   }
 
+  const getConnectionImage = (status: boolean | undefined) => {
+    return (status) ? connectedImage : disconnectedImage;
+  }
+
+  const connectionStatusElement = () => {
+    return (
+      <View style={{ flexDirection:'row',height: 25, alignItems:'center', alignSelf:'center', margin:10, columnGap: 10 }} >
+        <View style={styles.connectedImageContainer}>
+          <Image style={styles.connectionImage} source={getConnectionImage(matrixStatus?.isConnected)} />
+        </View>
+        <Text style={{fontSize:20, color:'#fff'}}>{matrixStatus?.isConnected ? "Connected" : "Offline"}</Text>
+      </View>
+      );
+  }
+
   return (
-    <SafeAreaView style={styles.mainContainer}>
+    <View style={styles.mainContainer}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <TouchableOpacity 
+      activeOpacity={0.99}
+        style={[styles.splashContainer, (displaySplash) ? null : styles.splashHidden]}
+        onPress={() => {
+          hideSplash();
+        }}
+        >
+        <View style={styles.splashInnerContainer}>
+          <Image style={styles.splashImage} source={logoImage}/>
+          <Text style={styles.splashText}>Tap to start</Text>
+        </View>
+      </TouchableOpacity>
       <NavigationContainer>
         <Stack.Navigator>
 
-          <Stack.Screen name="Input Routing" options={({ navigation, route }) => ({
+          <Stack.Screen name="Operation" options={({ navigation, route }) => ({
             headerStyle: {
               backgroundColor: '#006DB2',
             },
@@ -78,8 +123,9 @@ function App(): React.JSX.Element {
                 color="#fff"
               />
             ),
+            headerLeft: connectionStatusElement
           })}>
-            {(props) => <InputRoutingScreen 
+            {(props) => <OperationScreen 
                 matrixStatus={matrixStatus}
                 appConfig={appConfig}
               />}
@@ -104,7 +150,7 @@ function App(): React.JSX.Element {
         </Stack.Navigator>
       </NavigationContainer>
       
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -112,6 +158,52 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: '#006DB2',
+  },
+  connectedImageContainer: {
+    height: 30,
+    width: 30,
+    borderRadius: 50,
+    backgroundColor: '#E8F6FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  connectionImage: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain',
+  },
+  splashContainer:{
+    zIndex: 10,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#006DB2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  splashInnerContainer:{
+    width: 800,
+    flexDirection: 'column',
+    paddingBottom: 50,
+    backgroundColor: "#fff",
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  splashHidden:{
+    zIndex: -10,
+    opacity: 0,
+  },
+  splashImage:{
+    width: 600,
+    height: 336,
+    resizeMode: 'contain',
+  },
+  splashText:{
+    fontSize: 30,
+    color: '#777',
   },
   outputMapper: {
     position: 'absolute',

@@ -7,14 +7,6 @@ import inputImage from '../resources/input.png';
 import InputPort from "./InputPort";
 import { MatrixPort } from "../config/AppSettings";
 
-interface PortStatus {
-    port: MatrixOutput;
-    portConfig: MatrixPort;
-    selected: boolean;
-    onPress: Function;
-
-}
-
 const styles = StyleSheet.create({
     container: {
         flex:1,
@@ -39,7 +31,14 @@ const styles = StyleSheet.create({
 
   });
 
-export default function OutputSelectTile({ port, portConfig, selected, onPress }: PortStatus) {
+  interface PortStatus {
+    port: MatrixInput;
+    portConfig: MatrixPort;
+    selected: boolean;
+    onPress: Function;
+}
+
+export default function InputSelectTile({ port, portConfig, selected, onPress }: PortStatus) {
     return (
         <TouchableOpacity 
             style={[styles.container, (selected) ? styles.selectedContainer : null]}

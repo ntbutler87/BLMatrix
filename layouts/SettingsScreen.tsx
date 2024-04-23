@@ -8,14 +8,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   useWindowDimensions,
-  TouchableOpacity,
   SafeAreaView,
   StyleSheet,
-  Text,
-  TextInput,
-  View,
-  Image,
-  Switch
 } from 'react-native';
 
 import matrixSDK, { MatrixInput, MatrixOutput, MatrixStatus } from '../config/MatrixSDK';
@@ -24,8 +18,6 @@ import { PinCode, PinCodeT, DEFAULT } from '../components/PinCode';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 import { StackNavigationProp } from '@react-navigation/stack';
-import SettingTile from '../components/SettingTile';
-import SettingTilePort from '../components/SettingTilePort';
 import { TabView, SceneMap } from 'react-native-tab-view';
 import SettingTabConnection from './SettingTabConnection';
 import SettingTabInputs from './SettingTabInputs';
@@ -108,7 +100,7 @@ const renderScene = SceneMap({
         onSetCancel={() => setPinVisible(false)}
         onReset={() => {}}
         onEnter={() => {setPinVisible(false); }}
-        onCancel={() => { navigation.navigate('Input Routing')} }
+        onCancel={() => { navigation.navigate('Operation')} }
       />
       <TabView
         navigationState={{ index, routes }}

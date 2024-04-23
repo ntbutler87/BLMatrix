@@ -10,32 +10,24 @@ import {
   Animated,
   TouchableOpacity,
   SafeAreaView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
-  FlatList,
-  Image
 } from 'react-native';
 
 import matrixSDK, { MatrixInput, MatrixOutput, MatrixStatus } from '../config/MatrixSDK';
-import appSettings, { AppConfig, MatrixPort, MatrixPreset } from '../config/AppSettings';
+import { AppConfig } from '../config/AppSettings';
 import InputTile from '../components/InputTile';
 import OutputSelectTile from '../components/OutputSelectTile';
-import Logo1 from '../resources/LogoTransparent.png';
-import connectedImage from '../resources/linked.png';
-import disconnectedImage from '../resources/unlink.png';
 
 interface Props {
   matrixStatus: MatrixStatus;
   appConfig: AppConfig;
 }
-function InputRoutingScreen({matrixStatus, appConfig}: Props): React.JSX.Element {
+function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.Element {
   const [selectedInput, setSelectedInput] = useState<MatrixInput | null>(null);
   const [selectedOutputs, setSelectedOutputs] = useState<MatrixOutput[]>([]);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const isDarkMode = useColorScheme() === 'dark';
 
   const initiateSelectedOutputs = (input: MatrixInput) => {
     let currentOutputs = matrixStatus?.HDMI_OUT.filter((val) => { return val.input == input.port });
@@ -86,44 +78,30 @@ function InputRoutingScreen({matrixStatus, appConfig}: Props): React.JSX.Element
     closeOutputMapper();
   }
 
-  const getConnectionImage = (status: boolean | undefined) => {
-    return (status) ? connectedImage : disconnectedImage;
-  }
-
   return (
-    <SafeAreaView style={styles.mainContainer}>
+    <View style={styles.mainContainer}>
       <Animated.View style={[styles.outputMapper, {
         opacity: fadeAnim,
         zIndex: fadeAnim,
         transform: [{ scale: fadeAnim }]
       }]}>
         <View style={styles.outputMapperInner}>
-          <Text>Input {selectedInput?.port}: {selectedInput?.name}</Text>
-          <Text>Outputs: </Text>
-          <FlatList
-            data={matrixStatus?.HDMI_OUT}
-            renderItem={({ item }) => (
-              <OutputSelectTile
+          <View style={styles.outputMapperList}>
+            <Text style={styles.outputMapperTitle}>Input {selectedInput?.port}: {selectedInput?.name}</Text>
+            {matrixStatus.HDMI_OUT.map((item) => {
+              return <OutputSelectTile
+                key={"OUTPUTSELECT" + item.port}
                 port={item}
-                selected={(selectedOutputs.includes(item))}
-                onPress={toggleItemSelect}
-              />
-            )}
-            keyExtractor={item => String(item.port)}
-            extraData={selectedOutputs}
-          />
-          <TouchableOpacity style={styles.btn} onPress={commitOutputMapping}><Text>Full Send</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.btn} onPress={closeOutputMapper}><Text>Close</Text></TouchableOpacity>
+                portConfig={appConfig.HDMI_OUT[item.port-1]}
+                selected={selectedOutputs.includes(item)}
+                onPress={toggleItemSelect} />
+            }) }
+            <TouchableOpacity style={[styles.btn,styles.saveBtn]} onPress={commitOutputMapping}><Text style={[styles.btnText,styles.saveBtnText]}>Save</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.btn,styles.cancelBtn]} onPress={closeOutputMapper}><Text style={[styles.btnText,styles.cancelBtnText]}>Cancel</Text></TouchableOpacity>
+          </View>
         </View>
       </Animated.View>
-      {/* <Image style={{position:'absolute',bottom:0,left:0,height:150,resizeMode:'contain'}} source={Logo1} /> */}
       <View style={{ flex: 1, flexDirection: 'column'}}>
-        <View style={{ flexDirection:'row',height: 25, alignItems:'center', alignSelf:'center', margin:10, columnGap: 10 }} >
-          <View style={styles.connectedImageContainer}>
-            <Image style={styles.connectionImage} source={getConnectionImage(matrixStatus?.isConnected)} />
-          </View>
-          <Text style={{fontSize:20, color:'#fff'}}>{matrixStatus?.isConnected ? "Connected" : "Offline"}</Text>
-        </View>
         <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-evenly', rowGap: 10 }} >
           {matrixStatus?.HDMI_IN.map(data => {
             return <InputTile
@@ -137,28 +115,14 @@ function InputRoutingScreen({matrixStatus, appConfig}: Props): React.JSX.Element
           })}
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    // backgroundColor: 'rgb(86, 182, 209)',
     backgroundColor: '#006DB2',
-  },
-  connectedImageContainer: {
-    height: 30,
-    width: 30,
-    borderRadius: 50,
-    backgroundColor: '#E8F6FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  connectionImage: {
-    height: 20,
-    width: 20,
-    resizeMode: 'contain',
   },
   outputMapper: {
     position: 'absolute',
@@ -167,33 +131,74 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    opacity: 0.4,
-    backgroundColor: 'rgba(50,50,50,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    borderRadius: 10,
+  },
+  outputMapperInner: {
+    flex: 1,
+    padding: 40,
+    marginHorizontal: 150,
+    marginVertical: 40,
+    alignContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgb(245,245,245)',
     borderRadius: 10,
     shadowRadius: 15,
     shadowColor: 'rgb(20,20,20)',
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.7,
   },
-  outputMapperInner: {
-    flex: 1,
-    alignContent: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: 150,
-    backgroundColor: 'rgb(250,250,250)',
-    borderRadius: 10,
+  outputMapperTitle:{
+    flex:1,
+    fontSize: 28,
+    fontWeight: '600',
+    padding: 10,
+    paddingBottom: 30,
+    alignSelf: 'center',
+  },
+  outputMapperList:{
+    flex:1,
+    flexDirection:'column',
+    flexGrow:1,
+    width:600,
+    rowGap: 10,
   },
   highlight: {
     fontWeight: '700',
   },
   btn: {
-    width: 150,
+    flex:1,
+    flexDirection:'row',
+    borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderStyle: 'solid',
+    backgroundColor: '#fff',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  saveBtn:{ 
+    backgroundColor: '#00568C', 
+    justifyContent: 'center' 
+  },
+  saveBtnText:{ 
+    color: '#fff', 
+    fontSize:18,
+    fontWeight: '700' 
+  },
+  cancelBtn:{ 
+    backgroundColor: '#E8F6FF', 
+    justifyContent: 'center',
     borderWidth: 1,
-    backgroundColor: 'rgb(250,250,250)',
+    borderColor: '#83CBFA',
+  },
+  cancelBtnText:{ 
+    color: '#0496FF', 
+    fontSize:18,
+    fontWeight: '700' 
+  },
+  btnText:{
+      color: '#00568C',
   },
   input: {
     padding: 15,
@@ -205,4 +210,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InputRoutingScreen;
+export default OperationTabInputMapping;
