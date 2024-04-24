@@ -13,6 +13,7 @@ import {
   TextInput,
   View,
   Image,
+  Alert
 } from 'react-native';
 
 import matrixSDK, { MatrixInput, MatrixOutput, MatrixStatus } from '../config/MatrixSDK';
@@ -39,6 +40,28 @@ function SettingsTabScenes({matrixStatus, currentAppSettings}: Props): React.JSX
           appPortConfig={elem}
           port={matrixStatus.Scenes[elem.port-1]}
           onPress={() => {}} 
+          onSavePress={() => {
+            Alert.alert(
+              "Warning!",
+              "You are about to overwrite this scene with the current state. Are you SURE you want to continue?",
+              [
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                },
+                {
+                  text: 'Overwrite',
+                  onPress: () => {matrixSDK.manageScene(elem.port, "save");},
+                  style: 'destructive',
+                },
+              ],
+              {
+                cancelable: true,
+                onDismiss: () => {}
+              },
+            );
+            
+          }}
         />
       } )}
       </View>

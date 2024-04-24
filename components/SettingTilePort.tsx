@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { TouchableOpacity, StyleSheet, Text, Image, View, Switch, TextInput, ImageSourcePropType } from "react-native";
+import { TouchableOpacity, StyleSheet, Text, Image, View, Switch, TextInput, ImageSourcePropType, GestureResponderEvent } from "react-native";
 import { MatrixInput, MatrixOutput, MatrixScene } from "../config/MatrixSDK";
 import appSettings, { MatrixPort, MatrixPreset, getImage, ImagePicker } from "../config/AppSettings";
 
 import inputImage from '../resources/input.png';
+import saveImage from '../resources/save-red.png';
 
 interface PortStatus {
     port: MatrixInput | MatrixOutput | MatrixScene;
@@ -11,6 +12,7 @@ interface PortStatus {
     disabled?: boolean;
     onPress?: Function;
     appPortConfig: MatrixPort | MatrixPreset;
+    onSavePress?: (event: GestureResponderEvent) => void,
 }
 
 const styles = StyleSheet.create({
@@ -177,9 +179,27 @@ const styles = StyleSheet.create({
     manualImage: {
         backgroundColor:'#faefd4',
     },
+    saveImageContainer: {
+        zIndex:2,
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        width: 40,
+        height: 40,
+        borderRadius: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#ffdede',
+
+    },
+    saveImage: {
+        width: 20,
+        height: 20,
+        resizeMode: 'contain',
+    },
   });
 
-export default function SettingTilePort({ disabled, port, title, onPress, appPortConfig }: PortStatus) {
+export default function SettingTilePort({ disabled, port, title, onPress, appPortConfig, onSavePress }: PortStatus) {
     const [nameInput, setNameInput] = useState<string>((appPortConfig?.name) ? appPortConfig.name : '');
     const [override, setOverride] = useState<boolean>((appPortConfig?.overrideName) ? appPortConfig.overrideName : false);
     const [pickImage, setPickImage] = useState<boolean>(false);
@@ -200,15 +220,18 @@ export default function SettingTilePort({ disabled, port, title, onPress, appPor
 
     return (
         <View 
-            // onLayout={(event) => {
-            //     const {x, y, width, height} = event.nativeEvent.layout;
-            // }}
             style={[styles.btn, (disabled) ? styles.isDisabled : null,{justifyContent:'space-between',rowGap: 10,}]}>
-            <View style={{flex:4}}>
+            
+            {(!pickImage && onSavePress) ? 
+            <TouchableOpacity style={styles.saveImageContainer} onPress={onSavePress}>
+                <Image style={styles.saveImage} source={saveImage} />
+            </TouchableOpacity> : null}
+
+            <View style={{flex:4}}>                
             {(pickImage) ? <ImagePicker 
                 horizontal={true}
                 style={styles.imagePicker}
-                onSelect={(image: ImageSourcePropType, index: number) => {console.log(index);setPickImage(false); appSettings.setPortImageIndex(appPortConfig, index)}}/> :
+                onSelect={(image: ImageSourcePropType, index: number) => {setPickImage(false); appSettings.setPortImageIndex(appPortConfig, index)}}/> :
                 <TouchableOpacity 
                     style={[styles.inputIconContainer,(appPortConfig.imageIndex !== 0) ? styles.manualImage : null]}
                     onPress={() => {setPickImage(true)}}>

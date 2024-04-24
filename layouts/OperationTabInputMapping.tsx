@@ -27,6 +27,7 @@ interface Props {
 function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.Element {
   const [selectedInput, setSelectedInput] = useState<MatrixInput | null>(null);
   const [selectedOutputs, setSelectedOutputs] = useState<MatrixOutput[]>([]);
+  const [currentOutputs, setCurrentOutputs] = useState<MatrixOutput[]>([]);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const initiateSelectedOutputs = (input: MatrixInput) => {
@@ -34,8 +35,8 @@ function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.E
     if (!currentOutputs) {
       currentOutputs = [];
     }
-    console.log("Current Outputs: " + currentOutputs.length);
     setSelectedOutputs([...currentOutputs]);
+    setCurrentOutputs([...currentOutputs]);
   }
 
   const toggleItemSelect = (output: MatrixOutput) => {
@@ -49,8 +50,6 @@ function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.E
   const popupOutputMapper = (input: MatrixInput) => {
     setSelectedInput(input);
     initiateSelectedOutputs(input);
-    console.log("launching popup - input: ");
-    console.log(input);
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 150,
@@ -58,7 +57,6 @@ function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.E
     }).start();
   }
   const closeOutputMapper = () => {
-    console.log("closing popup");
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 80,
@@ -70,7 +68,6 @@ function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.E
     selectedOutputs.forEach((output) => {
       if (selectedInput && matrixStatus?.HDBT_OUT[output.port - 1].input !== selectedInput?.port) {
         setTimeout( (selectedInput, output) => {
-          console.log("#video_d out" + output.port + " matrix=" + selectedInput?.port);
           matrixSDK.setOutputSource(output.port, selectedInput?.port);
         }, (output.port * 400), selectedInput, output )
       }
@@ -94,7 +91,9 @@ function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.E
                 port={item}
                 portConfig={appConfig.HDMI_OUT[item.port-1]}
                 selected={selectedOutputs.includes(item)}
-                onPress={toggleItemSelect} />
+                currentPatched={currentOutputs.includes(item)}
+                onPress={toggleItemSelect}
+                style={{}} />
             }) }
             <TouchableOpacity style={[styles.btn,styles.saveBtn]} onPress={commitOutputMapping}><Text style={[styles.btnText,styles.saveBtnText]}>Save</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.btn,styles.cancelBtn]} onPress={closeOutputMapper}><Text style={[styles.btnText,styles.cancelBtnText]}>Cancel</Text></TouchableOpacity>
@@ -161,7 +160,7 @@ const styles = StyleSheet.create({
     flex:1,
     flexDirection:'column',
     flexGrow:1,
-    width:600,
+    // width:600,
     rowGap: 10,
   },
   highlight: {

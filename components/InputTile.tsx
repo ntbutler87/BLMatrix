@@ -1,6 +1,6 @@
-import { TouchableOpacity, StyleSheet, Text, Image, View, GestureResponderEvent } from "react-native";
-import { MatrixInput, MatrixOutput } from "../config/MatrixSDK";
-import { MatrixPort, getImage } from "../config/AppSettings";
+import { TouchableOpacity, StyleSheet, Text, Image, View, GestureResponderEvent, ScrollView } from "react-native";
+import matrixSDK, { MatrixInput, MatrixOutput } from "../config/MatrixSDK";
+import appSettings, { MatrixPort, getImage } from "../config/AppSettings";
 
 import inputImage from '../resources/input.png';
 
@@ -57,26 +57,18 @@ const styles = StyleSheet.create({
     },
     outputText: {
         flex:3,
-        // alignSelf: 'flex-start',
-        // flexDirection: 'row',
-        // alignContent: 'center',
         color: '#303030', 
         fontSize: 13,
         fontWeight: '400',
-        // backgroundColor: 'rgb(250,250,250)',
-        // borderRadius: 4,
-        // padding: 5,
     },
     portImage: {
         flex: 1,
         width: 15,
         height: 15,
         alignSelf: 'center',
-        // marginRight: 20,
     },
     portDisconnected: {
         color: '#E31010',
-        // opacity: 0.6,
     },
     inputIconContainer: {
         width: 50,
@@ -95,35 +87,58 @@ const styles = StyleSheet.create({
     outputList: {
         flex:1, 
         flexDirection: 'column',
-        justifyContent: 'flex-start',
+        // justifyContent: 'flex-start',
     },
     outputListItem: {
         // flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        height: 25,
+        // height: 25,
+        padding: 5,
     },
     isDisabled: {
         backgroundColor: '#aaa',
         opacity: 0.6,
     },
+    btnTouchable: {
+        flex:1,
+        backgroundColor:'#f8f8f8',
+        borderRadius:5,
+        shadowRadius: 2,
+        shadowColor: 'rgb(20,20,20)',
+        shadowOffset: {width: 0, height: 0},
+        shadowOpacity: 0.2,
+    },
   });
 
 export default function InputTile({ disabled, port, outputs,onPressF,appPortConfig }: PortStatus) {
     return (
-        <TouchableOpacity style={[styles.btn, (disabled) ? styles.isDisabled : null]} onPress={ (disabled) ? () => {} : () => {onPressF(port)}}>
-            <View style={{flex:1}}>
+        <View style={[styles.btn, (disabled) ? styles.isDisabled : null]} >
+            <TouchableOpacity style={styles.btnTouchable} onPress={ (disabled) ? () => {} : () => {onPressF(port)}}>
                 <View style={[styles.inputIconContainer, (disabled) ? styles.isDisabled : null]}>
                     <Image style={[styles.inputIcon, (disabled) ? styles.isDisabled : null]} source={getImage(port, appPortConfig)} />
                 </View>
                 <Text style={[styles.headerText]}>{ (appPortConfig?.overrideName) ? appPortConfig.name : port.name}</Text>
                 <Text style={[styles.inputText]}><Text style={[styles.connectedText, (port.sig == 0 ? styles.portDisconnected : null)]}>{port.sig == 0 ? "Disconnected" : "Connected" }</Text></Text>
-                {/* <Text style={[styles.connectedText, (port.sig == 0 ? styles.portDisconnected : null)]}>{port.sig == 0 ? "Not" : null } Connected</Text> */}
-            </View>
+            </TouchableOpacity>
             <View style={styles.outputList}>
-                {outputs?.map((val) => {return <View key={val.port} style={styles.outputListItem} ><Image source={inputImage} style={styles.portImage} resizeMethod='resize' resizeMode='contain' /><Text style={styles.outputText}>{val.port}: {val.name}</Text></View>})}
+                <ScrollView >
+                    {outputs?.map((val) => {
+                        let joinedPort = matrixSDK.getJoinedOutputPort(val);
+                        let joinedPortConfig = appSettings.getJoinedOutputPortConfig(val);
+                        let portConfig = appSettings.getPortConfig(val);
+                        let portName = (portConfig.overrideName) ? portConfig.name : val.name;
+                        let joinedPortName = (joinedPortConfig.overrideName) ? joinedPortConfig.name : joinedPort.name;
+                        if (portName !== joinedPortName){
+                            portName += " / " + joinedPortName;
+                        }
+                        return <View key={val.port} style={styles.outputListItem} >
+                            <Image source={inputImage} style={styles.portImage} resizeMethod='resize' resizeMode='contain' />
+                            <Text style={styles.outputText}>{val.port}: {portName}</Text>
+                        </View>})}
+                </ScrollView>
             </View>
-        </TouchableOpacity>
+        </View>
     );
 }

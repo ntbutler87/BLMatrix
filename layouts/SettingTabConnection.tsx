@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, cloneElement } from 'react';
 import {
   TouchableOpacity,
   StyleSheet,
@@ -13,49 +13,100 @@ import {
   TextInput,
   View,
   Image,
+  useWindowDimensions,
 } from 'react-native';
 
 import matrixSDK, { MatrixInput, MatrixOutput, MatrixStatus } from '../config/MatrixSDK';
+import { PinCode, PinCodeT, DEFAULT } from '../components/PinCode';
 
 import connectedImage from '../resources/linked.png';
 import disconnectedImage from '../resources/unlink.png';
+import appSettings, { AppConfig } from '../config/AppSettings';
 
 interface Props {
-  matrixStatus: MatrixStatus | null;
+  matrixStatus: MatrixStatus;
+  currentAppSettings: AppConfig;
 }
 
-function SettingTabConnection({matrixStatus}: Props): React.JSX.Element {
-  const [ipText,setIPText] = useState<string>((matrixStatus?.ip) ? matrixStatus.ip : '');
+function SettingTabConnection({matrixStatus, currentAppSettings}: Props): React.JSX.Element {
+  const [ipText,setIPText] = useState<string>((matrixStatus.ip) ? matrixStatus.ip : '');
+  const layout = useWindowDimensions();
+  const [pinMode, setPinMode] = useState(PinCodeT.Modes.Set);
+  const [pinVisible, setPinVisible] = useState(false);
+  const pin = currentAppSettings.pin;
   
   const getConnectionImage = (status: boolean | undefined) => {
     return (status) ? connectedImage : disconnectedImage;
   }
   return (
-    <View style={{flex:1}}>
-      <Text style={{color:"#fff",fontWeight:'600',fontSize:28, alignSelf:'center', margin: 20}}>Matrix Connection</Text>
-      <View style={{ flexDirection:'row',height: 25, alignItems:'center', alignSelf:'center', margin:10, columnGap: 10 }} >
-        <View style={styles.connectedImageContainer}>
-          <Image style={styles.connectionImage} source={getConnectionImage(matrixStatus?.isConnected)} />
+    <View style={{flex:1, flexDirection:'column', rowGap: 20}}>
+      <PinCode 
+        pin={pin} 
+        mode={pinMode} 
+        visible={pinVisible} 
+        options={{
+          pinLength: 6, 
+          allowReset: false,
+          maxAttempt: 3,
+          disableLock: true,
+          // allowCancel: true,
+        }}
+        styles={{ 
+          main: {
+            backgroundColor: '#006DB2',
+            zIndex: 99 },
+          enter: { 
+            cancelText: {
+              color: "#fff",
+            } ,
+            backspaceText: {
+              color: "#fff",
+            } 
+          }
+          
+        }}
+        onSet={(newPin) => {
+          appSettings.updatePin(newPin);
+        }}
+        onSetCancel={() => setPinVisible(false)}
+        onReset={() => {}}
+        onEnter={() => {setPinVisible(false); }}
+      />
+      <View style={{flex:1}}>
+        <Text style={{color:"#fff",fontWeight:'600',fontSize:28, alignSelf:'center', margin: 20}}>Matrix Connection</Text>
+        <View style={{ flexDirection:'row',height: 25, alignItems:'center', alignSelf:'center', margin:10, columnGap: 10 }} >
+          <View style={styles.connectedImageContainer}>
+            <Image style={styles.connectionImage} source={getConnectionImage(matrixStatus?.isConnected)} />
+          </View>
+          <Text style={{fontSize:20, color:'#fff'}}>{matrixStatus?.isConnected ? "Connected" : "Offline"}</Text>
         </View>
-        <Text style={{fontSize:20, color:'#fff'}}>{matrixStatus?.isConnected ? "Connected" : "Offline"}</Text>
+        <View style={{flex:1, flexDirection:'row', columnGap: 5, justifyContent: 'center', margin:20}}>
+          <TextInput
+            style={[styles.input, {width: 240}]}
+            placeholder="Enter an IP address"
+            keyboardType='decimal-pad'
+            value={ipText}
+            onChangeText={setIPText}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              matrixSDK.setIPAddress(ipText);
+            }} 
+            style={styles.btn} >
+            <Text>Update IP</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={{flex:1, flexDirection:'row', columnGap: 5, justifyContent: 'center', margin:20}}>
-        <TextInput
-          style={[styles.input, {width: 240}]}
-          placeholder="Enter an IP address"
-          keyboardType='decimal-pad'
-          value={ipText}
-          onChangeText={setIPText}
-        />
+      <View style={{flex:1, justifyContent: 'center', alignItems: 'center'}}>
         <TouchableOpacity
           onPress={() => {
-            console.log("Should be saving now... " + ipText);
-            matrixSDK.setIPAddress(ipText);
+            setPinVisible(true);
           }} 
           style={styles.btn} >
-          <Text>Update IP</Text>
+            <Text>Update PIN</Text>
         </TouchableOpacity>
       </View>
+      <View style={{flex:2, justifyContent: 'center', alignItems: 'center'}}></View>
     </View>
   );
 }

@@ -108,7 +108,7 @@ export interface AppConfig {
 }
 
 export const blankConfig: AppConfig = {
-    pin: '9071369',
+    pin: '000000',
     splashTimeout: 3,
     HDMI_IN: [
         {port: 1, name:"", type:"HDMI_IN", overrideName: false, imageIndex:0},
@@ -191,6 +191,12 @@ class AppSettings {
         return true;
     }
 
+    updatePin = async (pin: string) => {
+        this.config.pin = pin;
+        await this.storeConfig(this.config);
+        await this.onChangeCallback(this.config);
+    }
+
     overridePortName = async (port: MatrixInput | MatrixOutput | MatrixScene, name: string) => {
         this.config[port.type][port.port - 1].name = name;
         var override: boolean = (name.length === 0) ? false : true;
@@ -200,18 +206,32 @@ class AppSettings {
     }
 
     setPortImageIndex = async (port: MatrixPort | MatrixPreset, index: number): Promise<boolean> => {
-        console.log("Port: " + JSON.stringify(port));
-        console.log("New port image index: " + index);
         if (index < 0 || index > imageArray.length - 1) {
             return false;
         }
-        console.log(JSON.stringify(this.config[port.type][port.port - 1]));
         this.config[port.type][port.port - 1].imageIndex = index;
-        console.log(JSON.stringify(this.config[port.type][port.port - 1]));
 
         await this.storeConfig(this.config);
         await this.onChangeCallback(this.config);
         return true;
+    }
+
+
+    getPortConfig(port: MatrixInput | MatrixOutput): MatrixPort {
+        if (port.type === "HDMI_IN") {
+            return this.config.HDMI_IN[port.port-1];
+        }
+        if (port.type === "HDMI_OUT") {
+            return this.config.HDMI_OUT[port.port-1];
+        }
+        return this.config.HDBT_OUT[port.port-1];
+    }
+
+    getJoinedOutputPortConfig(port: MatrixPort | MatrixOutput): MatrixPort {
+        if (port.type === "HDMI_OUT") {
+            return this.config.HDBT_OUT[port.port-1];
+        }
+        return this.config.HDMI_OUT[port.port-1];
     }
 
 }

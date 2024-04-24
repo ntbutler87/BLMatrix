@@ -39,8 +39,6 @@ function App(): React.JSX.Element {
 
   const hideSplash = () => {
     const timeoutLength = appConfig.splashTimeout * 60000;
-    console.log ("SplashTimeout: " + appConfig.splashTimeout + " - Timeout: " + timeoutLength);
-    console.log (JSON.stringify(appConfig));
 
     setDisplaySplash(false);
     const timeoutId = setTimeout(() => {
@@ -50,26 +48,19 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     Promise.resolve(matrixSDK.init(updateStatusState)).catch((e) => { console.log(e) });
-    console.log("MatrixIP Currently: " + matrixStatus?.ip);
     return (() => { Promise.resolve(matrixSDK.stopConnection()); })
   }, []);
 
   const updateConfig = (config: AppConfig) => {
-    console.log("New config:");
-    console.log(JSON.stringify(config));
     setAppConfig({...config});
   }
 
   useEffect( () => {
     Promise.resolve(appSettings.init(updateConfig))
-      .then( () => {
-        console.log("Got app config");
-      } )
       .catch((e) => { console.log(e) });
   }, [] );
 
   const updateStatusState = (state: MatrixStatus) => {
-    console.log("Updating local matrixState - should re-render...");
     setMatrixStatus({ ...state });
   }
 

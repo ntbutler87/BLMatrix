@@ -109,7 +109,6 @@ class MatrixSDK {
     init = async (onChangeCallback: Function) => {
         this.status.ip = await this.getStoredIP();
         this.onChangeCallback = onChangeCallback;
-        console.log("Set MatrixSDK IP to: " + this.status.ip);
         if (this.status.ip !== null) {
             this.startConnection();
         }
@@ -279,6 +278,13 @@ class MatrixSDK {
         return null;
     }
 
+    getJoinedOutputPort(port: MatrixOutput): MatrixOutput {
+        if (port.type === "HDMI_OUT") {
+            return this.status.HDBT_OUT[port.port-1];
+        }
+        return this.status.HDMI_OUT[port.port-1];
+    }
+
     setIPAddress = (ipAddress: string) => {
         asyncstorage.setItem('matrixIP', ipAddress);
         this.status.ip = ipAddress;
@@ -307,9 +313,37 @@ class MatrixSDK {
                 'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
             },
             body: "#video_d out" + output + " matrix=" + source
-        }).then( () => { console.log("Should have updated successfully") }).catch( () => { console.log("Didn't work...") } );
+        }).catch( () => { console.log("Set output failed") } );
 
     }
+
+    manageScene = (scene: number, operation: "load" | "save") => {
+        if (scene < 1 || scene > 8 || scene < 1 || scene > 8){
+            return false
+        }
+        // exe=1 to save a scene | exe=2 to load a scene
+        let exeParam = (operation === "save") ? 1 : 2; 
+        console.log(this.status.ip + ": #group" + scene + " exe=" + exeParam);
+
+        fetch('http://' + this.status.ip + '/video.set', {
+            method: 'POST',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+                'Content-Type': 'text/plain;charset=UTF-8',
+                'Accept': '*/*',
+                'Origin':'http://' + this.status.ip,
+                'Referer':'http://' + this.status.ip + '/',
+                'Connection': 'close',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+            },
+            body: "#group" + scene + " exe=" + exeParam
+        }).catch( () => { console.log(operation + " scene failed") } );
+
+    }
+
 
 }
 

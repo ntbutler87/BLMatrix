@@ -47,7 +47,7 @@ function SettingsScreen({matrixStatus, appConfig}: Props): React.JSX.Element {
   
   
   const ConnectionTab = () => {
-    return <SettingTabConnection matrixStatus={matrixStatus}/>;
+    return <SettingTabConnection matrixStatus={matrixStatus} currentAppSettings={appConfig} />;
   }
   const InputsRoute = () => {
     return <SettingTabInputs matrixStatus={matrixStatus} currentAppSettings={appConfig} />;
@@ -75,7 +75,7 @@ const renderScene = SceneMap({
         mode={pinMode} 
         visible={pinVisible} 
         options={{
-          pinLength: 7, 
+          pinLength: 6, 
           allowReset: false,
           maxAttempt: 3,
           disableLock: true,

@@ -1,10 +1,6 @@
-import { TouchableOpacity, StyleSheet, Text, Image } from "react-native";
-import { MatrixInput, MatrixOutput } from "../config/MatrixSDK";
+import { TouchableOpacity, StyleSheet, Text, Alert, StyleProp, ViewStyle } from "react-native";
+import { MatrixOutput } from "../config/MatrixSDK";
 
-import hdmiImage from '../resources/hdmi-port.png';
-import hdbtImage from '../resources/rj45.png';
-import inputImage from '../resources/input.png';
-import InputPort from "./InputPort";
 import { MatrixPort } from "../config/AppSettings";
 
 interface PortStatus {
@@ -12,7 +8,8 @@ interface PortStatus {
     portConfig: MatrixPort;
     selected: boolean;
     onPress: Function;
-
+    currentPatched: boolean;
+    style?: StyleProp<ViewStyle>
 }
 
 const styles = StyleSheet.create({
@@ -36,17 +33,40 @@ const styles = StyleSheet.create({
     selectedText:{
         color: '#00568C',
     },
+    currentPatchedContainer:{
+        borderWidth: 2,
+        borderColor: '#72f2b0',
+    },
+    currentPatchedText:{
+        color: '#72f2b0',
+    },
 
   });
 
-export default function OutputSelectTile({ port, portConfig, selected, onPress }: PortStatus) {
+export default function OutputSelectTile({ port, portConfig, selected, onPress, currentPatched, style }: PortStatus) {
     return (
         <TouchableOpacity 
-            style={[styles.container, (selected) ? styles.selectedContainer : null]}
-            onPress={() => {onPress(port)}}
+            style={[styles.container, (selected) ? styles.selectedContainer : null,(currentPatched) ? styles.currentPatchedContainer : null, style]}
+            onPress={ (currentPatched) ? 
+                () => {
+                    Alert.alert(
+                        "Already Patched",
+                        "You can't de-select an input that's already patched here.\n\nSelect another output and patch it there instead.",
+                        [
+                        {
+                            text: 'OK',
+                            style: 'default',
+                        },
+                        ],
+                        {
+                        cancelable: true,
+                        onDismiss: () => {}
+                        },
+                    )} 
+                : () => {onPress(port)}}
             >
             <Text style={[styles.text,(selected) ? styles.selectedText : null]}>{port.port}: { (portConfig.overrideName) ? portConfig.name : port.name}</Text>
-            {(selected) ? <Text style={styles.selectedText}>Selected</Text> : null}
+            {(selected) ? <Text style={[styles.selectedText, (currentPatched) ? styles.currentPatchedText : null]}>{ (currentPatched) ? "Patched" : "Selected"}</Text> : null}
         </TouchableOpacity>
     );
 }

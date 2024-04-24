@@ -42,7 +42,6 @@ function OperationTabOutputMapping({matrixStatus, appConfig}: Props): React.JSX.
     }).start();
   }
   const closeOutputMapper = () => {
-    console.log("closing popup");
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 80,
@@ -52,7 +51,6 @@ function OperationTabOutputMapping({matrixStatus, appConfig}: Props): React.JSX.
 
   const commitOutputMapping = () => {
     if (selectedInput && selectedOutput) {
-      console.log("#video_d out" + selectedOutput.port + " matrix=" + selectedInput.port);
       matrixSDK.setOutputSource(selectedOutput.port, selectedInput.port);
       closeOutputMapper();
     }

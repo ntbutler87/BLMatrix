@@ -42,7 +42,7 @@ export default function InputSelectTile({ port, portConfig, selected, onPress }:
     return (
         <TouchableOpacity 
             style={[styles.container, (selected) ? styles.selectedContainer : null]}
-            onPress={() => {onPress(port)}}
+            onPress={ (selected) ? () => {} : () => {onPress(port)}}
             >
             <Text style={[styles.text,(selected) ? styles.selectedText : null]}>{port.port}: { (portConfig.overrideName) ? portConfig.name : port.name}</Text>
             {(selected) ? <Text style={styles.selectedText}>Selected</Text> : null}
