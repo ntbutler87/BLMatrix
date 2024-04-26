@@ -69,7 +69,7 @@ function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.E
       if (selectedInput && matrixStatus?.HDBT_OUT[output.port - 1].input !== selectedInput?.port) {
         setTimeout( (selectedInput, output) => {
           matrixSDK.setOutputSource(output.port, selectedInput?.port);
-        }, (output.port * 400), selectedInput, output )
+        }, (output.port * 50), selectedInput, output )
       }
     });
     closeOutputMapper();

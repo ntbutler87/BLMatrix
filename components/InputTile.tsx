@@ -3,6 +3,7 @@ import matrixSDK, { MatrixInput, MatrixOutput } from "../config/MatrixSDK";
 import appSettings, { MatrixPort, getImage } from "../config/AppSettings";
 
 import inputImage from '../resources/input.png';
+import { useEffect, useRef, useState } from "react";
 
 interface PortStatus {
     port: MatrixInput;
@@ -86,15 +87,12 @@ const styles = StyleSheet.create({
     },
     outputList: {
         flex:1, 
-        flexDirection: 'column',
-        // justifyContent: 'flex-start',
+        flexDirection: 'column',        
     },
     outputListItem: {
-        // flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        // height: 25,
         padding: 5,
     },
     isDisabled: {
@@ -112,7 +110,20 @@ const styles = StyleSheet.create({
     },
   });
 
+export type ScrollViewRef = ScrollView & {
+    flashScrollIndicators: () => void;
+};
 export default function InputTile({ disabled, port, outputs,onPressF,appPortConfig }: PortStatus) {
+    const scrollViewRef = useRef<ScrollViewRef | null>(null);
+
+    // For iOS - scrollview indicator flash every few seconds
+    useEffect(() => {
+        const flasherInterval = setInterval(function () {
+            scrollViewRef.current?.flashScrollIndicators();
+        }, 3000);
+        return  () => clearTimeout(flasherInterval);
+    }, []);
+
     return (
         <View style={[styles.btn, (disabled) ? styles.isDisabled : null]} >
             <TouchableOpacity style={styles.btnTouchable} onPress={ (disabled) ? () => {} : () => {onPressF(port)}}>
@@ -123,7 +134,7 @@ export default function InputTile({ disabled, port, outputs,onPressF,appPortConf
                 <Text style={[styles.inputText]}><Text style={[styles.connectedText, (port.sig == 0 ? styles.portDisconnected : null)]}>{port.sig == 0 ? "Disconnected" : "Connected" }</Text></Text>
             </TouchableOpacity>
             <View style={styles.outputList}>
-                <ScrollView >
+                <ScrollView persistentScrollbar={true} ref={scrollViewRef} showsVerticalScrollIndicator={true}>
                     {outputs?.map((val) => {
                         let joinedPort = matrixSDK.getJoinedOutputPort(val);
                         let joinedPortConfig = appSettings.getJoinedOutputPortConfig(val);

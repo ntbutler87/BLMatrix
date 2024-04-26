@@ -197,9 +197,8 @@ class AppSettings {
         await this.onChangeCallback(this.config);
     }
 
-    overridePortName = async (port: MatrixInput | MatrixOutput | MatrixScene, name: string) => {
+    overridePortName = async (port: MatrixInput | MatrixOutput | MatrixScene, override: boolean, name: string) => {
         this.config[port.type][port.port - 1].name = name;
-        var override: boolean = (name.length === 0) ? false : true;
         this.config[port.type][port.port - 1].overrideName = override;
         await this.storeConfig(this.config);
         await this.onChangeCallback(this.config);

@@ -206,16 +206,16 @@ export default function SettingTilePort({ disabled, port, title, onPress, appPor
     
 
     const toggleOverrideName = (override: boolean) => {
-        if (!override) {
-            appSettings.overridePortName(port,'');
-        }
+        // if (!override) {
+            appSettings.overridePortName(port,override,appPortConfig.name);
+        // }
         setOverride(override);
     }
 
     const validateNewName = () => {
-        if (nameInput !== appPortConfig?.name) { // && nameInput.length >= 2 && nameInput.length <= 10) {
-            appSettings.overridePortName(port,nameInput);
-        }
+        // if (nameInput !== appPortConfig?.name) { // && nameInput.length >= 2 && nameInput.length <= 10) {
+            appSettings.overridePortName(port,override,nameInput);
+        // }
     }
 
     return (

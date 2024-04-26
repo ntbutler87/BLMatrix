@@ -138,7 +138,8 @@ class MatrixSDK {
                 'Cache-Control': 'no-cache',
                 'Pragma': 'no-cache',
                 'Expires': '0',
-            }
+            },
+            timeout: 1000
         })
             .then( (response) => {
                 if (this.status.isConnected === false) {
