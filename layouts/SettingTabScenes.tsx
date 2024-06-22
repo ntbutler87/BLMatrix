@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     flexWrap:'wrap',
     columnGap: 5,
     padding: 5,
-    justifyContent: 'center',
+    justifyContent: 'space-around',
   },
   outputMapper: {
     position: 'absolute',

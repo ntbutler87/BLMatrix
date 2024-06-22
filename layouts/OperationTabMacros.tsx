@@ -13,30 +13,30 @@ import {
   Text,
   View,
   Alert,
+  Share
 } from 'react-native';
 
 import matrixSDK, { MatrixInput, MatrixOutput, MatrixStatus } from '../config/MatrixSDK';
-import { AppConfig } from '../config/AppSettings';
-import SceneTile from '../components/SceneTile';
+import { AppConfig, Macro } from '../config/AppSettings';
+import MacroTile from '../components/MacroTile';
 
 interface Props {
   matrixStatus: MatrixStatus;
   appConfig: AppConfig;
 }
-function OperationTabScenes({matrixStatus, appConfig}: Props): React.JSX.Element {
-
+function OperationTabMacros({matrixStatus, appConfig}: Props): React.JSX.Element {
+  const recordingMacro: Macro | undefined = appConfig.Macro.find( (macro) => { return macro.isRecording } );
   return (
     <View style={styles.mainContainer}>
-      {matrixStatus.Scenes.map((item) => {
-        return <SceneTile
-          key={"SCENESELECT" + item.port}
-          port={item}
-          appPortConfig={appConfig.Scene[item.port-1]}
-          disabled={!matrixStatus.isConnected}
+      {appConfig.Macro.map((item) => {
+        return <MacroTile
+          key={"MACRO" + item.port}
+          appPortConfig={appConfig.Macro[item.port-1]}
+          disabled={!matrixStatus.isConnected || ( recordingMacro && item !== recordingMacro) }
           onPressF={()=>{ 
             Alert.alert(
               "Warning!",
-              "You are about to load a new configuration.\n\n This process can take 15-20 seconds.\n\n Are you SURE you want to continue?",
+              "You are about to run the macro '" + item.name + "'.\n\n Are you SURE you want to continue?",
               [
                 {
                   text: 'Cancel',
@@ -44,7 +44,7 @@ function OperationTabScenes({matrixStatus, appConfig}: Props): React.JSX.Element
                 },
                 {
                   text: 'Load',
-                  onPress: () => {matrixSDK.manageScene(item.port, "load");},
+                  onPress: () => {matrixSDK.runMacroCommand(item.commands)},
                   style: 'destructive',
                 },
               ],
@@ -71,4 +71,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OperationTabScenes;
+export default OperationTabMacros;

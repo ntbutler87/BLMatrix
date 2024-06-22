@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 
 import matrixSDK, { MatrixInput, MatrixOutput, MatrixStatus } from '../config/MatrixSDK';
-import { AppConfig } from '../config/AppSettings';
+import { AppConfig, Macro } from '../config/AppSettings';
 import InputTile from '../components/InputTile';
 import OutputSelectTile from '../components/OutputSelectTile';
 
@@ -28,6 +28,7 @@ function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.E
   const [selectedInput, setSelectedInput] = useState<MatrixInput | null>(null);
   const [selectedOutputs, setSelectedOutputs] = useState<MatrixOutput[]>([]);
   const [currentOutputs, setCurrentOutputs] = useState<MatrixOutput[]>([]);
+  const recordingMacro: Macro | undefined = appConfig.Macro.find( (macro) => { return macro.isRecording } );
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const initiateSelectedOutputs = (input: MatrixInput) => {
@@ -65,18 +66,24 @@ function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.E
   }
 
   const commitOutputMapping = () => {
-    selectedOutputs.forEach((output) => {
-      if (selectedInput && matrixStatus?.HDBT_OUT[output.port - 1].input !== selectedInput?.port) {
-        setTimeout( (selectedInput, output) => {
-          matrixSDK.setOutputSource(output.port, selectedInput?.port);
-        }, (output.port * 50), selectedInput, output )
-      }
-    });
+    var outputs: Array<number> = [];
+    for (var i=0; i<selectedOutputs.length; i++){
+      outputs.push(selectedOutputs[i].port);
+    }
+    if (selectedInput)
+      matrixSDK.setOutputSourceMultiple(selectedInput?.port, outputs);
+    // selectedOutputs.forEach((output) => {
+    //   if (selectedInput && matrixStatus?.HDBT_OUT[output.port - 1].input !== selectedInput?.port) {
+    //     setTimeout( (selectedInput, output) => {
+    //       matrixSDK.setOutputSource(output.port, selectedInput?.port);
+    //     }, (output.port * 50), selectedInput, output )
+    //   }
+    // });
     closeOutputMapper();
   }
 
   return (
-    <View style={styles.mainContainer}>
+    <>
       <Animated.View style={[styles.outputMapper, {
         opacity: fadeAnim,
         zIndex: fadeAnim,
@@ -93,15 +100,15 @@ function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.E
                 selected={selectedOutputs.includes(item)}
                 currentPatched={currentOutputs.includes(item)}
                 onPress={toggleItemSelect}
-                style={{}} />
+                style={{}}
+                recordingMacro={recordingMacro !== undefined} />
             }) }
             <TouchableOpacity style={[styles.btn,styles.saveBtn]} onPress={commitOutputMapping}><Text style={[styles.btnText,styles.saveBtnText]}>Save</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.btn,styles.cancelBtn]} onPress={closeOutputMapper}><Text style={[styles.btnText,styles.cancelBtnText]}>Cancel</Text></TouchableOpacity>
           </View>
         </View>
       </Animated.View>
-      <View style={{ flex: 1, flexDirection: 'column'}}>
-        <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-evenly', rowGap: 10 }} >
+      <View style={styles.mainContainer}>
           {matrixStatus?.HDMI_IN.map(data => {
             return <InputTile
               key={"HDMI_IN" + data.port}
@@ -112,9 +119,8 @@ function OperationTabInputMapping({matrixStatus, appConfig}: Props): React.JSX.E
               appPortConfig={appConfig?.HDMI_IN[data.port - 1]}
             />
           })}
-        </View>
       </View>
-    </View>
+    </>
   );
 }
 
@@ -122,6 +128,12 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: '#006DB2',
+    justifyContent: 'space-around', 
+    alignItems:'center',
+    alignContent: 'center',
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    rowGap: 10,
   },
   outputMapper: {
     position: 'absolute',

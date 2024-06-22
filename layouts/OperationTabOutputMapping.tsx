@@ -65,12 +65,12 @@ function OperationTabOutputMapping({matrixStatus, appConfig}: Props): React.JSX.
       }]}>
         <View style={styles.outputMapperInner}>
           <View style={styles.outputMapperList}>
-            <Text style={styles.outputMapperTitle}>Input {selectedInput?.port}: {selectedInput?.name}</Text>
+            <Text style={styles.outputMapperTitle}>Output {selectedOutput?.port}: { selectedOutput?.name}</Text>
             {matrixStatus.HDMI_IN.map((item) => {
               return <InputSelectTile
                 key={"INPUTSELECT" + item.port}
                 port={item}
-                portConfig={appConfig.HDMI_OUT[item.port-1]}
+                portConfig={appConfig.HDMI_IN[item.port-1]}
                 selected={selectedInput === item}
                 onPress={toggleItemSelect} />
             }) }
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: '#006DB2',
-    justifyContent: 'space-evenly', 
+    justifyContent: 'space-around',
     alignItems:'center',
     alignContent: 'center',
     flexDirection: 'row', 

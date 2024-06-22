@@ -6,6 +6,7 @@ import OperationTabInputMapping from './OperationTabInputMapping';
 import { TabView, SceneMap } from 'react-native-tab-view';
 import OperationTabScenes from './OperationTabScenes';
 import OperationTabOutputMapping from './OperationTabOutputMapping';
+import OperationTabMacros from './OperationTabMacros';
 
 interface Props {
   matrixStatus: MatrixStatus;
@@ -18,6 +19,7 @@ function OperationScreen({matrixStatus, appConfig}: Props): React.JSX.Element {
     { key: 'Scenes', title: 'Scenes' },
     { key: 'Inputs', title: 'Input Mapping' },
     { key: 'Outputs', title: 'Output Mapping' },
+    { key: 'Macros', title: 'Macros' },
   ]);
   
   const ScenesTab = () => {
@@ -29,11 +31,14 @@ function OperationScreen({matrixStatus, appConfig}: Props): React.JSX.Element {
   const OutputsTab = () => {
     return <OperationTabOutputMapping appConfig={appConfig} matrixStatus={matrixStatus}/>;
   }
-
+  const MacrosTab = () => {
+    return <OperationTabMacros appConfig={appConfig} matrixStatus={matrixStatus}/>;
+  }
   const renderScene = SceneMap({
     Scenes: ScenesTab,
     Inputs: InputsTab,
     Outputs: OutputsTab,
+    Macros: MacrosTab,
   });
   return (
     <TabView

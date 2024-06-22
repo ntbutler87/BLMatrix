@@ -1,4 +1,4 @@
-import { TouchableOpacity, StyleSheet, Text, Image, View, GestureResponderEvent, ScrollView } from "react-native";
+import { TouchableOpacity, StyleSheet, Text, Image, View, GestureResponderEvent, ScrollView, useWindowDimensions } from "react-native";
 import matrixSDK, { MatrixInput, MatrixOutput } from "../config/MatrixSDK";
 import appSettings, { MatrixPort, getImage } from "../config/AppSettings";
 
@@ -25,8 +25,8 @@ const styles = StyleSheet.create({
       shadowColor: 'rgb(20,20,20)',
       shadowOffset: {width: 10, height: 10},
       shadowOpacity: 0.7,
-      width: 260,
-      height: 320,
+      width: 300,
+      height: 300,
     },
     connected: {
         borderStyle: 'solid',
@@ -115,7 +115,7 @@ export type ScrollViewRef = ScrollView & {
 };
 export default function InputTile({ disabled, port, outputs,onPressF,appPortConfig }: PortStatus) {
     const scrollViewRef = useRef<ScrollViewRef | null>(null);
-
+    const { height, width } = useWindowDimensions();
     // For iOS - scrollview indicator flash every few seconds
     useEffect(() => {
         const flasherInterval = setInterval(function () {
@@ -125,7 +125,7 @@ export default function InputTile({ disabled, port, outputs,onPressF,appPortConf
     }, []);
 
     return (
-        <View style={[styles.btn, (disabled) ? styles.isDisabled : null]} >
+        <View style={[styles.btn, (disabled) ? styles.isDisabled : null, { maxWidth: ((width/4) - 15) }]} >
             <TouchableOpacity style={styles.btnTouchable} onPress={ (disabled) ? () => {} : () => {onPressF(port)}}>
                 <View style={[styles.inputIconContainer, (disabled) ? styles.isDisabled : null]}>
                     <Image style={[styles.inputIcon, (disabled) ? styles.isDisabled : null]} source={getImage(port, appPortConfig)} />

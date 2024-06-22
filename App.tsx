@@ -17,7 +17,10 @@ import {
   Text,
   TouchableOpacity,
   PanResponder,
+  Linking,
+  Alert
 } from 'react-native';
+import { URL, URLSearchParams } from 'react-native-url-polyfill';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import matrixSDK, { MatrixStatus, statusSchema } from './config/MatrixSDK';
@@ -28,6 +31,31 @@ import logoImage from './resources/LogoTransparent.png';
 import connectedImage from './resources/linked.png';
 import disconnectedImage from './resources/unlink.png';
 import OperationScreen from './layouts/OperationScreen';
+import ImportMacroScreen from './layouts/ImportMacroScreen';
+import { MacroExport } from './components/MacroTile';
+import { btoa, atob } from 'react-native-quick-base64'
+
+const useInitialURL = () => {
+  const [url, setUrl] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(true);
+
+  useEffect(() => {
+    const getUrlAsync = async () => {
+      // Get the deep link used to open the app
+      const initialUrl = await Linking.getInitialURL();
+
+      // The setTimeout is just for testing purpose
+      setTimeout(() => {
+        setUrl(initialUrl);
+        setProcessing(false);
+      }, 1000);
+    };
+
+    getUrlAsync();
+  }, []);
+
+  return {url, processing};
+};
 
 function App(): React.JSX.Element {
   const { height, width } = useWindowDimensions();
@@ -36,6 +64,42 @@ function App(): React.JSX.Element {
   const [displaySplash, setDisplaySplash] = useState<boolean>(true);
   const isDarkMode = useColorScheme() === 'dark';
   const Stack = createNativeStackNavigator<RootStackParamList>();
+  const [importMacro, setImportMacro] = useState<MacroExport|null>(null);
+
+  const {url: initialUrl, processing} = useInitialURL();
+
+  useEffect( () => {
+    const eventListener = Linking.addEventListener('url', ({ url }) => {
+      try {
+        var data = (new URL(url).pathname);
+        var macro: MacroExport = JSON.parse(atob(data.slice(1)));
+        if (matrixSDK.validateCommandString(macro.commands)) {
+          console.log(macro);
+          setImportMacro(macro);
+        } else {
+          console.log("Invalid command string");
+          throw "Invalid command string";
+        }
+      } catch {
+        Alert.alert(
+          "Error!",
+          "Unable to decode valid macro data",
+          [
+            {
+              text: 'OK',
+              style: 'cancel',
+            },
+          ],
+          {
+            cancelable: true,
+            onDismiss: () => {}
+          },  
+        );
+      }
+    });
+    return eventListener.remove;
+  }, []);
+
 
   const hideSplash = () => {
     const timeoutLength = appConfig.splashTimeout * 60000;
@@ -79,6 +143,16 @@ function App(): React.JSX.Element {
       );
   }
 
+  // const linking = {
+  //   prefixes: ['blmatrixapp://'],
+  //   config: {
+  //     screens: {
+  //       Operation: 'macro',
+  //       Settings: 'import',
+  //     }
+  //   },
+  // };
+
   return (
     <View style={styles.mainContainer}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -90,56 +164,70 @@ function App(): React.JSX.Element {
         }}
         >
         <View style={styles.splashInnerContainer}>
-          <Image style={styles.splashImage} source={logoImage}/>
+          <Image style={styles.splashImage} source={(appConfig.splashImageSource !== null) ? {uri: appConfig.splashImageSource} : logoImage}/>
+          
           <Text style={styles.splashText}>Tap to start</Text>
+          {/* <Text style={styles.splashText}>{initialUrl}</Text> */}
         </View>
       </TouchableOpacity>
-      <NavigationContainer>
-        <Stack.Navigator>
 
-          <Stack.Screen name="Operation" options={({ navigation, route }) => ({
-            headerStyle: {
-              backgroundColor: '#006DB2',
-            },
-            headerTintColor: '#fff',
-            headerTitleStyle: {
-              fontWeight: 'bold'
-            },
-            headerRight: () => (
-              <Button
-                onPress={() => {
-                  navigation.navigate('Settings')
-                }}
-                title="Settings"
-                color="#fff"
-              />
-            ),
-            headerLeft: connectionStatusElement
-          })}>
-            {(props) => <OperationScreen 
-                matrixStatus={matrixStatus}
-                appConfig={appConfig}
-              />}
-          </Stack.Screen>
+      {
+        (importMacro) 
+        ? <ImportMacroScreen 
+          matrixStatus={matrixStatus} 
+          appConfig={appConfig} 
+          newMacro={importMacro}
+          onCompleted={() => {console.log("Finalised import"); setImportMacro(null)}} 
+          onCancel={() => {setImportMacro(null)}} /> 
+          
+        : <NavigationContainer 
+            // linking={linking} 
+            >
+            <Stack.Navigator>
 
-          <Stack.Screen name="Settings" options={{
-            headerStyle: {
-              backgroundColor: '#006DB2',
-            },
-            headerTintColor: '#fff',
-            headerTitleStyle: {
-              fontWeight: 'bold'
-            },
-          }}>
-            {(props) => <SettingsScreen 
-                matrixStatus={matrixStatus}
-                appConfig={appConfig}
-              />}
-          </Stack.Screen>
+              <Stack.Screen name="Operation" options={({ navigation, route }) => ({
+                headerStyle: {
+                  backgroundColor: '#006DB2',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold'
+                },
+                headerRight: () => (
+                  <Button
+                    onPress={() => {
+                      navigation.navigate('Settings')
+                    }}
+                    title="Settings"
+                    color="#fff"
+                  />
+                ),
+                headerLeft: connectionStatusElement
+              })}>
+                {(props) => <OperationScreen 
+                    matrixStatus={matrixStatus}
+                    appConfig={appConfig}
+                  />}
+              </Stack.Screen>
+
+              <Stack.Screen name="Settings" options={{
+                headerStyle: {
+                  backgroundColor: '#006DB2',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold'
+                },
+              }}>
+                {(props) => <SettingsScreen 
+                    matrixStatus={matrixStatus}
+                    appConfig={appConfig}
+                  />}
+              </Stack.Screen>
 
 
-        </Stack.Navigator>
-      </NavigationContainer>
+            </Stack.Navigator>
+          </NavigationContainer>}
       
     </View>
   );

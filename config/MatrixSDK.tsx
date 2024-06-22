@@ -98,12 +98,22 @@ class MatrixSDK {
     statusString: string | null;
     onChangeCallback: Function | null;
     status: MatrixStatus;
+    controlEnabled: boolean;
+    blockRefresh: boolean;
+    recordingMacro: boolean;
+    preRecordControlState: boolean;
+    macroString: string;
 
     constructor() {
         this.statusUpdater = null;
         this.statusString = null;
         this.onChangeCallback = null;
         this.status = statusSchema;
+        this.controlEnabled = true;
+        this.blockRefresh = false;
+        this.recordingMacro = false;
+        this.preRecordControlState = true;
+        this.macroString = "";
     }
 
     init = async (onChangeCallback: Function) => {
@@ -132,8 +142,37 @@ class MatrixSDK {
         return true;
     }
 
+    setOutputControlEnabled = (enabled: boolean) => {
+        this.controlEnabled = enabled;
+    }
+
+    getOutputControlState = () => {
+        return this.controlEnabled;
+    }
+
+    startMacroRecord = (allowOutputControl: boolean) => {
+        this.macroString = ""; // ensure macro command string is cleared before starting
+        this.recordingMacro = true;
+        this.preRecordControlState = this.controlEnabled; // Store the current control state, so we can re-instate it after macro record
+        if (!allowOutputControl) {
+            this.controlEnabled = false;
+        }
+    }
+
+    stopMacroRecord = (): string => {
+        const macroCommand = this.macroString;
+        this.macroString = "";
+        this.recordingMacro = false;
+        this.controlEnabled = this.preRecordControlState;
+        return macroCommand;
+    }
+
     getStatusUpdate = () => {
-        axios.get('http://' + this.status.ip + '/all_dat.get' , { // + new Date().getTime(), {
+        if (this.blockRefresh) {
+            console.log("Refresh currently blocked. Not querying matrix for status");
+            return;
+        }
+        axios.get('http://' + this.status.ip + '/all_dat.get' + new Date().getTime(), {
             headers: {
                 'Cache-Control': 'no-cache',
                 'Pragma': 'no-cache',
@@ -297,7 +336,18 @@ class MatrixSDK {
         if (output < 1 || output > 8 || source < 1 || source > 8){
             return false
         }
-        console.log(this.status.ip + ": #video_d out" + output + " matrix=" + source);
+        
+        if (this.recordingMacro) {
+            this.macroString += "#video_d out" + output + " matrix=" + source;
+        }
+
+        if (!this.controlEnabled) {
+            console.log("Output control temporarily disabled - exiting method")
+            return;
+        }
+
+        // Block the app from refreshing for a moment - troubleshooting for bug where matrix does not action the commands in some cases
+        this.blockRefresh = true;
 
         fetch('http://' + this.status.ip + '/video.set', {
             method: 'POST',
@@ -316,6 +366,52 @@ class MatrixSDK {
             body: "#video_d out" + output + " matrix=" + source
         }).catch( () => { console.log("Set output failed") } );
 
+        // Let the app start refreshing again
+        this.blockRefresh = false;
+
+    }
+
+    setOutputSourceMultiple = (inputPort: number, outputPorts: Array<number>) => {
+        if (inputPort < 1 || inputPort > 8){
+            return false; //return false for invalid input
+        }
+        var commandString = "";
+        for(var i=0; i<outputPorts.length; i++){
+            if (outputPorts[i] < 1 || outputPorts[i] > 8 ){ return false;} //return false for invalid input
+            commandString += "#video_d out" + outputPorts[i] + " matrix=" + inputPort;
+        }
+
+        if (this.recordingMacro) {
+            this.macroString += commandString;
+        }
+
+        if (!this.controlEnabled) {
+            console.log("Output control temporarily disabled - exiting method")
+            return;
+        }
+
+        // Block the app from refreshing for a moment - troubleshooting for bug where matrix does not action the commands in some cases
+        this.blockRefresh = true;
+
+        fetch('http://' + this.status.ip + '/video.set', {
+            method: 'POST',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+                'Content-Type': 'text/plain;charset=UTF-8',
+                'Accept': '*/*',
+                'Origin':'http://' + this.status.ip,
+                'Referer':'http://' + this.status.ip + '/',
+                'Connection': 'close',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+            },
+            body: commandString
+        }).catch( () => { console.log("Set output failed") } );
+
+        // Let the app start refreshing again
+        this.blockRefresh = false;
     }
 
     manageScene = (scene: number, operation: "load" | "save") => {
@@ -324,7 +420,18 @@ class MatrixSDK {
         }
         // exe=1 to save a scene | exe=2 to load a scene
         let exeParam = (operation === "save") ? 1 : 2; 
-        console.log(this.status.ip + ": #group" + scene + " exe=" + exeParam);
+
+        if (this.recordingMacro) {
+            this.macroString += "#group" + scene + " exe=" + exeParam;
+        }
+
+        if (!this.controlEnabled) {
+            console.log("Output control temporarily disabled - exiting method")
+            return;
+        }
+
+        // Block the app from refreshing for a moment - troubleshooting for bug where matrix does not action the commands in some cases
+        this.blockRefresh = true;
 
         fetch('http://' + this.status.ip + '/video.set', {
             method: 'POST',
@@ -343,9 +450,97 @@ class MatrixSDK {
             body: "#group" + scene + " exe=" + exeParam
         }).catch( () => { console.log(operation + " scene failed") } );
 
+        // Let the app start refreshing again
+        this.blockRefresh = false;
     }
 
 
+    runMacroCommand = (macro: string): boolean => {
+        //  should parse the macro string here and make sure it's valid...
+        console.log("Running macro: " + macro);
+
+        if (this.recordingMacro) {
+            // Currently recording a macro - cannot run one at the same time
+            return false;
+        }
+
+        if (!this.controlEnabled) {
+            console.log("Output control temporarily disabled - exiting method")
+            return false;
+        }
+
+        // Block the app from refreshing for a moment - troubleshooting for bug where matrix does not action the commands in some cases
+        this.blockRefresh = true;
+
+        fetch('http://' + this.status.ip + '/video.set', {
+            method: 'POST',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+                'Content-Type': 'text/plain;charset=UTF-8',
+                'Accept': '*/*',
+                'Origin':'http://' + this.status.ip,
+                'Referer':'http://' + this.status.ip + '/',
+                'Connection': 'close',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+            },
+            body: macro
+        }).catch( () => { console.log("Set output failed"); return false } );
+
+        // Let the app start refreshing again
+        this.blockRefresh = false;
+
+        return true;
+    }
+
+    validateCommandString = (commands: string): boolean => {
+        if (commands[0] !== "#") {
+            return false;
+        }
+        let commandList = commands.slice(1).split("#");
+        // TODO: The tedious work of validation of all the commands... Should start with 
+        for (var i=0; i<commandList.length; i++) {
+            let body = commandList[i].split(" ");
+            switch (true) {
+                case body[0].startsWith("video_"):
+                    break;
+                case body[0].startsWith("audio_"): 
+                    break;
+                case body[0].startsWith("edid_"):
+                    break;
+                case body[0] === "lcd":
+                    break;
+                case body[0].startsWith("group"):
+                    break;
+                case body[0] === "register":
+                    return false; // Probably want to stop these from being run in a macro
+                    break;
+                case body[0] === "login":
+                    return false; // Probably want to stop these from being run in a macro
+                    break;
+                case body[0] === "port":
+                    return false; // Probably want to stop these from being run in a macro
+                    break;
+                case body[0] === "power":
+                    return false; // Probably want to stop these from being run in a macro
+                    break;
+                case body[0] === "ip":
+                    return false; // Probably want to stop these from being run in a macro
+                    break;
+                case body[0] === "system":
+                    return false; // Probably want to stop these from being run in a macro
+                    break;
+                case body[0] === "factory":
+                    return false; // Probably want to stop these from being run in a macro
+                    break;
+                default:
+                    return false;
+            }
+        }
+        return true;
+    }
 }
 
 const matrixSDK = new MatrixSDK();

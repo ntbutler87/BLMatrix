@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 
 import asyncstorage from '@react-native-async-storage/async-storage';
-import { MatrixInput, MatrixOutput, MatrixScene } from './MatrixSDK';
+import matrixSDK, { MatrixInput, MatrixOutput, MatrixScene } from './MatrixSDK';
 import hdmiImage from '../resources/hdmi.png';
 import screenImage from '../resources/monitor.png';
 import stopImage from '../resources/no-parking.png';
@@ -44,6 +44,7 @@ import tv2Image from '../resources/tv2.png';
 import winnerImage from '../resources/winner.png';
 
 import { ImageSourcePropType } from 'react-native';
+import { MacroExport } from '../components/MacroTile';
 
 const imageArray: Array<ImageSourcePropType> = [
     autoImage,
@@ -90,9 +91,20 @@ export interface MatrixPreset {
     imageIndex: number,
 }
 
+export interface Macro {
+    port: number, 
+    type: "Macro",
+    name: string, 
+    overrideName: boolean,
+    imageIndex: number,
+    commands: string,
+    isRecording: boolean,
+}
+
 export interface AppConfig {
     pin: string,
     splashTimeout: number,
+    splashImageSource: string | null,
     HDMI_IN: [ 
         MatrixPort, MatrixPort, MatrixPort, MatrixPort, MatrixPort, MatrixPort, MatrixPort, MatrixPort
     ],
@@ -105,11 +117,15 @@ export interface AppConfig {
     Scene: [
         MatrixPreset, MatrixPreset, MatrixPreset, MatrixPreset, MatrixPreset, MatrixPreset, MatrixPreset, MatrixPreset
     ]
+    Macro: [
+        Macro, Macro, Macro, Macro, Macro, Macro, Macro, Macro
+    ]
 }
 
 export const blankConfig: AppConfig = {
     pin: '000000',
     splashTimeout: 3,
+    splashImageSource: null,
     HDMI_IN: [
         {port: 1, name:"", type:"HDMI_IN", overrideName: false, imageIndex:0},
         {port: 2, name:"", type:"HDMI_IN", overrideName: false, imageIndex:0},
@@ -141,14 +157,24 @@ export const blankConfig: AppConfig = {
         {port: 8, name:"", type: "HDBT_OUT", overrideName: false, imageIndex:0},
     ],
     Scene: [
-        {port: 1, name: "scene01", type:"Scene", overrideName: false, imageIndex:0},
-        {port: 2, name: "scene02", type:"Scene", overrideName: false, imageIndex:0},
-        {port: 3, name: "scene03", type:"Scene", overrideName: false, imageIndex:0},
-        {port: 4, name: "scene04", type:"Scene", overrideName: false, imageIndex:0},
-        {port: 5, name: "scene05", type:"Scene", overrideName: false, imageIndex:0},
-        {port: 6, name: "scene06", type:"Scene", overrideName: false, imageIndex:0},
-        {port: 7, name: "scene07", type:"Scene", overrideName: false, imageIndex:0},
-        {port: 8, name: "scene08", type:"Scene", overrideName: false, imageIndex:0},
+        {port: 1, name: "Scene01", type:"Scene", overrideName: false, imageIndex:0},
+        {port: 2, name: "Scene02", type:"Scene", overrideName: false, imageIndex:0},
+        {port: 3, name: "Scene03", type:"Scene", overrideName: false, imageIndex:0},
+        {port: 4, name: "Scene04", type:"Scene", overrideName: false, imageIndex:0},
+        {port: 5, name: "Scene05", type:"Scene", overrideName: false, imageIndex:0},
+        {port: 6, name: "Scene06", type:"Scene", overrideName: false, imageIndex:0},
+        {port: 7, name: "Scene07", type:"Scene", overrideName: false, imageIndex:0},
+        {port: 8, name: "Scene08", type:"Scene", overrideName: false, imageIndex:0},
+    ],
+    Macro: [
+        {port: 1, name: "Macro 1", type:"Macro", overrideName: false, imageIndex:0, commands: "", isRecording: false},
+        {port: 2, name: "Macro 2", type:"Macro", overrideName: false, imageIndex:0, commands: "", isRecording: false},
+        {port: 3, name: "Macro 3", type:"Macro", overrideName: false, imageIndex:0, commands: "", isRecording: false},
+        {port: 4, name: "Macro 4", type:"Macro", overrideName: false, imageIndex:0, commands: "", isRecording: false},
+        {port: 5, name: "Macro 5", type:"Macro", overrideName: false, imageIndex:0, commands: "", isRecording: false},
+        {port: 6, name: "Macro 6", type:"Macro", overrideName: false, imageIndex:0, commands: "", isRecording: false},
+        {port: 7, name: "Macro 7", type:"Macro", overrideName: false, imageIndex:0, commands: "", isRecording: false},
+        {port: 8, name: "Macro 8", type:"Macro", overrideName: false, imageIndex:0, commands: "", isRecording: false},
     ]
 }
 
@@ -164,12 +190,36 @@ class AppSettings {
     init = async (onChangeCallback: Function) => {
         this.onChangeCallback = onChangeCallback;
         const currentConfig = await this.getStoredSettings();
+        // TODO: Ensure any new config properties are added to existing config if they don't exist (e.g. on new release with new features)
         if (currentConfig !== null){
-            this.config = currentConfig;
+            this.config = await this.validateStoredSettingsSchema(currentConfig);
         } else {
             await this.storeConfig(this.config);
         }
         this.onChangeCallback(this.config);
+    }
+
+    /**
+     * Ensure that the settings stored in local storage have the most up-to-date schema, in case a new update has changed things
+     */
+    validateStoredSettingsSchema = async (currentConfig: AppConfig): Promise<AppConfig> => {
+        if(currentConfig.pin === undefined) {
+            currentConfig.pin = blankConfig.pin;
+        }
+        if(currentConfig.splashTimeout === undefined) {
+            currentConfig.splashTimeout = blankConfig.splashTimeout;
+        }
+        if(currentConfig.Scene === undefined) {
+            currentConfig.Scene = blankConfig.Scene;
+        }
+        if(currentConfig.Macro === undefined) {
+            currentConfig.Macro = blankConfig.Macro;
+        }
+        if(currentConfig.splashImageSource === undefined) {
+            currentConfig.splashImageSource = null;
+        }
+        await this.storeConfig(currentConfig);
+        return currentConfig;
     }
 
     getStoredSettings = async (): Promise<AppConfig | null> => {
@@ -197,14 +247,26 @@ class AppSettings {
         await this.onChangeCallback(this.config);
     }
 
-    overridePortName = async (port: MatrixInput | MatrixOutput | MatrixScene, override: boolean, name: string) => {
+    updateLogo = async (dataURI: string | null) => {
+        this.config.splashImageSource = dataURI;
+        await this.storeConfig(this.config);
+        await this.onChangeCallback(this.config);
+    }
+
+    updateTimeout = async (timeout: number) => {
+        this.config.splashTimeout = timeout;
+        await this.storeConfig(this.config);
+        await this.onChangeCallback(this.config);
+    }
+
+    overridePortName = async (port: MatrixInput | MatrixOutput | MatrixScene | Macro, override: boolean, name: string) => {
         this.config[port.type][port.port - 1].name = name;
         this.config[port.type][port.port - 1].overrideName = override;
         await this.storeConfig(this.config);
         await this.onChangeCallback(this.config);
     }
 
-    setPortImageIndex = async (port: MatrixPort | MatrixPreset, index: number): Promise<boolean> => {
+    setPortImageIndex = async (port: MatrixPort | MatrixPreset | Macro, index: number): Promise<boolean> => {
         if (index < 0 || index > imageArray.length - 1) {
             return false;
         }
@@ -231,6 +293,34 @@ class AppSettings {
             return this.config.HDBT_OUT[port.port-1];
         }
         return this.config.HDMI_OUT[port.port-1];
+    }
+
+    startRecordingMacro = async (port: Macro, enableOutputControl: boolean): Promise<boolean> => {
+        this.config.Macro[port.port-1].isRecording = true;
+        matrixSDK.startMacroRecord(enableOutputControl);
+        await this.storeConfig(this.config);
+        await this.onChangeCallback(this.config);
+        return true;
+
+    }
+
+    saveMacro = async (port: Macro): Promise<boolean> => {
+        // validate command?
+        const macroString = matrixSDK.stopMacroRecord();
+        this.config.Macro[port.port-1].commands = macroString;
+        this.config.Macro[port.port-1].isRecording = false;
+        await this.storeConfig(this.config);
+        await this.onChangeCallback(this.config);
+        return true;
+    }
+
+    importMacro = async (port: Macro, newMacro: MacroExport): Promise<boolean> => {
+        this.config.Macro[port.port-1].commands = newMacro.commands;
+        this.config.Macro[port.port-1].imageIndex = newMacro.iconIndex;
+        this.config.Macro[port.port-1].name = newMacro.name;
+        await this.storeConfig(this.config);
+        await this.onChangeCallback(this.config);
+        return true;
     }
 
 }
@@ -271,7 +361,7 @@ export function ImagePicker({style, onSelect, horizontal}: ImagePickerInterface)
     );
 }
 
-export const getImage = (port: MatrixInput | MatrixOutput | MatrixScene, item: MatrixPreset | MatrixPort ) => {
+export const getImage = (port: MatrixInput | MatrixOutput | MatrixScene | Macro, item: MatrixPreset | MatrixPort | Macro ) => {
     if (item === undefined){
         return hdmiImage;
     }
@@ -280,7 +370,7 @@ export const getImage = (port: MatrixInput | MatrixOutput | MatrixScene, item: M
     } 
 
     let name = (item.overrideName) ? item.name : port.name;
-    if (port.type === "Scene"){
+    if (port.type === "Scene" || port.type === "Macro"){
         if (name.includes('1')){
             return oneImage;
         }

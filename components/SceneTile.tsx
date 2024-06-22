@@ -1,4 +1,4 @@
-import { TouchableOpacity, StyleSheet, Text, Image, View, GestureResponderEvent } from "react-native";
+import { TouchableOpacity, StyleSheet, Text, Image, View, GestureResponderEvent, useWindowDimensions } from "react-native";
 import { MatrixInput, MatrixOutput, MatrixScene } from "../config/MatrixSDK";
 import { MatrixPort, MatrixPreset, getImage } from "../config/AppSettings";
 
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
       shadowColor: 'rgb(20,20,20)',
       shadowOffset: {width: 10, height: 10},
       shadowOpacity: 0.7,
-      width: 260,
+      width: 300,
       height: 300,
     },
     connected: {
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     },
     inputIconContainer: {
         width: 100,
-        height: 100,
+        maxHeight: 100,
         padding: 10,
         margin: 15,
         borderRadius: 100,
@@ -101,8 +101,9 @@ const styles = StyleSheet.create({
   });
 
 export default function SceneTile({ port, onPressF, appPortConfig, disabled }: PortStatus) {
+    const { height, width } = useWindowDimensions();
     return (
-        <TouchableOpacity style={[styles.btn, (disabled) ? styles.isDisabled : null]} onPress={ (disabled) ? () => {} : () => {onPressF(port)}}>
+        <TouchableOpacity style={[styles.btn, (disabled) ? styles.isDisabled : null, { maxWidth: ((width/4) - 15) }]} onPress={ (disabled) ? () => {} : () => {onPressF(port)}}>
             <View style={{flex:1}}>
                 <View style={[styles.inputIconContainer, (disabled) ? styles.isDisabled : null]}>
                     <Image style={[styles.inputIcon, (disabled) ? styles.isDisabled : null]} source={getImage(port, appPortConfig)} />

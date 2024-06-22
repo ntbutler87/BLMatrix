@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TouchableOpacity, StyleSheet, Text, Image, View, Switch, TextInput, ImageSourcePropType, GestureResponderEvent } from "react-native";
+import { TouchableOpacity, StyleSheet, Text, Image, View, Switch, TextInput, ImageSourcePropType, GestureResponderEvent, useWindowDimensions } from "react-native";
 import { MatrixInput, MatrixOutput, MatrixScene } from "../config/MatrixSDK";
 import appSettings, { MatrixPort, MatrixPreset, getImage, ImagePicker } from "../config/AppSettings";
 
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
       shadowColor: 'rgb(20,20,20)',
       shadowOffset: {width: 10, height: 10},
       shadowOpacity: 0.3,
-      width: 260,
+      width: 300,
       height: 320,
     },
     connected: {
@@ -203,6 +203,7 @@ export default function SettingTilePort({ disabled, port, title, onPress, appPor
     const [nameInput, setNameInput] = useState<string>((appPortConfig?.name) ? appPortConfig.name : '');
     const [override, setOverride] = useState<boolean>((appPortConfig?.overrideName) ? appPortConfig.overrideName : false);
     const [pickImage, setPickImage] = useState<boolean>(false);
+    const { height, width } = useWindowDimensions();
     
 
     const toggleOverrideName = (override: boolean) => {
@@ -220,7 +221,7 @@ export default function SettingTilePort({ disabled, port, title, onPress, appPor
 
     return (
         <View 
-            style={[styles.btn, (disabled) ? styles.isDisabled : null,{justifyContent:'space-between',rowGap: 10,}]}>
+            style={[styles.btn, (disabled) ? styles.isDisabled : null,{justifyContent:'space-between',rowGap: 10, maxWidth: ((width/4) - 20) }]}>
             
             {(!pickImage && onSavePress) ? 
             <TouchableOpacity style={styles.saveImageContainer} onPress={onSavePress}>
