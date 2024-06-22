@@ -15,8 +15,10 @@
 		7699B88040F8A987B510C191 /* libPods-BLMatrix-BLMatrixTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-BLMatrix-BLMatrixTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		D25319B12BD9DEE600816057 /* Splash.png in Resources */ = {isa = PBXBuildFile; fileRef = D25319B02BD9DEE600816057 /* Splash.png */; };
-		D25319B32BD9DFF600816057 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D25319B22BD9DFF600816057 /* Assets.xcassets */; };
-		D25319B52BD9E00200816057 /* appstore.png in Resources */ = {isa = PBXBuildFile; fileRef = D25319B42BD9E00200816057 /* appstore.png */; };
+		D29733D52C0C0D8E0060B1EA /* appstore.png in Resources */ = {isa = PBXBuildFile; fileRef = D29733D42C0C0D8E0060B1EA /* appstore.png */; };
+		D29733D72C0C0DA00060B1EA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D29733D62C0C0DA00060B1EA /* Assets.xcassets */; };
+		D29733D92C0C0F5D0060B1EA /* bl-matrix-high-resolution-logo-transparent.png in Resources */ = {isa = PBXBuildFile; fileRef = D29733D82C0C0F5C0060B1EA /* bl-matrix-high-resolution-logo-transparent.png */; };
+		D29733DB2C0C0FCD0060B1EA /* logoA.png in Resources */ = {isa = PBXBuildFile; fileRef = D29733DA2C0C0FCD0060B1EA /* logoA.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,8 +49,10 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = BLMatrix/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-BLMatrix-BLMatrixTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BLMatrix-BLMatrixTests.release.xcconfig"; path = "Target Support Files/Pods-BLMatrix-BLMatrixTests/Pods-BLMatrix-BLMatrixTests.release.xcconfig"; sourceTree = "<group>"; };
 		D25319B02BD9DEE600816057 /* Splash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Splash.png; sourceTree = "<group>"; };
-		D25319B22BD9DFF600816057 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		D25319B42BD9E00200816057 /* appstore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = appstore.png; sourceTree = "<group>"; };
+		D29733D42C0C0D8E0060B1EA /* appstore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = appstore.png; sourceTree = "<group>"; };
+		D29733D62C0C0DA00060B1EA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D29733D82C0C0F5C0060B1EA /* bl-matrix-high-resolution-logo-transparent.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "bl-matrix-high-resolution-logo-transparent.png"; path = "../../../../Downloads/bl-matrix-high-resolution-logo-transparent.png"; sourceTree = "<group>"; };
+		D29733DA2C0C0FCD0060B1EA /* logoA.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logoA.png; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -95,8 +99,10 @@
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
-				D25319B22BD9DFF600816057 /* Assets.xcassets */,
-				D25319B42BD9E00200816057 /* appstore.png */,
+				D29733D42C0C0D8E0060B1EA /* appstore.png */,
+				D29733D82C0C0F5C0060B1EA /* bl-matrix-high-resolution-logo-transparent.png */,
+				D29733DA2C0C0FCD0060B1EA /* logoA.png */,
+				D29733D62C0C0DA00060B1EA /* Assets.xcassets */,
 				D25319B02BD9DEE600816057 /* Splash.png */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
@@ -250,11 +256,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D25319B52BD9E00200816057 /* appstore.png in Resources */,
+				D29733DB2C0C0FCD0060B1EA /* logoA.png in Resources */,
+				D29733D52C0C0D8E0060B1EA /* appstore.png in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				D25319B32BD9DFF600816057 /* Assets.xcassets in Resources */,
 				D25319B12BD9DEE600816057 /* Splash.png in Resources */,
+				D29733D92C0C0F5D0060B1EA /* bl-matrix-high-resolution-logo-transparent.png in Resources */,
+				D29733D72C0C0DA00060B1EA /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -586,6 +594,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "${PODS_ROOT}/../../node_modules/react-native/Libraries/LinkingIOS";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
@@ -655,6 +664,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "${PODS_ROOT}/../../node_modules/react-native/Libraries/LinkingIOS";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,

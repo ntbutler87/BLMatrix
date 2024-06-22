@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
-    <device id="ipad9_7" orientation="landscape" layout="fullscreen" appearance="light"/>
+    <device id="ipad10_9rounded" orientation="landscape" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
@@ -13,14 +13,14 @@
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="1180" height="820"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Splash.png" translatesAutoresizingMaskIntoConstraints="NO" id="9xB-v6-wAa">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="1180" height="820"/>
                             </imageView>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="BL Matrix Controller" textAlignment="center" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="18" translatesAutoresizingMaskIntoConstraints="NO" id="GJd-Yh-RWb">
-                                <rect key="frame" x="279" y="90" width="466" height="80"/>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BL Matrix" textAlignment="center" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="18" translatesAutoresizingMaskIntoConstraints="NO" id="GJd-Yh-RWb">
+                                <rect key="frame" x="480" y="180" width="220.5" height="80"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="80" id="qBS-m4-Imh"/>
                                 </constraints>
@@ -28,8 +28,8 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="by Nathan Butler" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="MN2-I3-ftu">
-                                <rect key="frame" x="0.0" y="230" width="1024" height="21"/>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="A controller for the BrightLink 8x8 HDBaseT Matrix" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="MN2-I3-ftu">
+                                <rect key="frame" x="0.0" y="270" width="1180" height="21"/>
                                 <constraints>
                                     <constraint firstAttribute="height" relation="lessThanOrEqual" constant="21" id="93t-eP-EYY"/>
                                     <constraint firstAttribute="height" relation="lessThanOrEqual" constant="21" id="J7L-jC-SaG"/>
@@ -40,6 +40,12 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logoA.png" translatesAutoresizingMaskIntoConstraints="NO" id="0t4-B0-r34">
+                                <rect key="frame" x="0.0" y="291" width="1180" height="509"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="509" id="Ecx-qQ-Exa"/>
+                                </constraints>
+                            </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -48,21 +54,27 @@
                             <constraint firstItem="MN2-I3-ftu" firstAttribute="top" secondItem="GJd-Yh-RWb" secondAttribute="bottom" constant="10" id="7wa-IS-0oz"/>
                             <constraint firstItem="9xB-v6-wAa" firstAttribute="trailing" secondItem="Bcu-3y-fUS" secondAttribute="trailing" id="8cO-tO-tY7"/>
                             <constraint firstAttribute="trailing" secondItem="MN2-I3-ftu" secondAttribute="trailing" id="F7F-M2-DQB"/>
+                            <constraint firstItem="0t4-B0-r34" firstAttribute="bottom" secondItem="Bcu-3y-fUS" secondAttribute="bottom" id="JX5-oN-o2m"/>
                             <constraint firstItem="9xB-v6-wAa" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" id="Qbu-Ti-Ybk"/>
                             <constraint firstAttribute="bottom" secondItem="9xB-v6-wAa" secondAttribute="bottom" id="SaR-yJ-esS"/>
+                            <constraint firstItem="0t4-B0-r34" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" id="V0c-2b-Ckf"/>
+                            <constraint firstItem="0t4-B0-r34" firstAttribute="trailing" secondItem="Bcu-3y-fUS" secondAttribute="trailing" id="atH-cX-bvq"/>
+                            <constraint firstItem="0t4-B0-r34" firstAttribute="top" secondItem="MN2-I3-ftu" secondAttribute="bottom" id="nIS-Pa-X0d"/>
                             <constraint firstItem="MN2-I3-ftu" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" id="na2-KC-XVY"/>
                             <constraint firstItem="MN2-I3-ftu" firstAttribute="top" secondItem="GJd-Yh-RWb" secondAttribute="bottom" constant="10" id="ny0-Ev-idx"/>
                             <constraint firstItem="9xB-v6-wAa" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="pHN-x7-6LT"/>
+                            <constraint firstItem="0t4-B0-r34" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="pv3-VP-vHk"/>
                             <constraint firstItem="GJd-Yh-RWb" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="ytR-BU-CF3"/>
                         </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="51.864406779661017" y="374.63414634146341"/>
+            <point key="canvasLocation" x="51.5625" y="374.21875"/>
         </scene>
     </scenes>
     <resources>
         <image name="Splash.png" width="1180" height="820"/>
+        <image name="logoA.png" width="1024" height="1024"/>
     </resources>
 </document>
