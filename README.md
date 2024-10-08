@@ -41,7 +41,7 @@ npm run ios -- --simulator="iPad Air (5th generation)"
 
 ## Step 2: Connect to your matrix
 1. Open the app
-2. Go to the Settings area (default PIN 123456)
+2. Go to the Settings area (default PIN 000000)
 3. Enter the IP address of the HDMI matrix
 
 ## Step 2b: If you don't own a matrix yet, try the simulator...
